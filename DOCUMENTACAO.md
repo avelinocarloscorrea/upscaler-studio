@@ -38,7 +38,7 @@ Os links para Esmeralda Paper, avaliação, política de privacidade e GitHub s�
 - `src/weights/`: pesos dos modelos distribuídos dentro do pacote.
 - `src/guia.html` e `src/guia.css`: guia do usuário que acompanha o build.
 - `src/img/`: marca, fontes e avisos de licença.
-- `webpack.config.js`: gera a pasta estática `dist/` e copia WebAssembly e documentos.
+- `webpack.config.js`: gera a pasta estática `dist/`, usa nome versionado no JavaScript para evitar código antigo em cache e copia WebAssembly e documentos.
 
 ## 4. Tipos de mídia e requisitos
 
@@ -80,6 +80,8 @@ As dependências antigas `grunt-cloudfront` e Grunt foram removidas do `package.
 - Build de produção e checagem TypeScript concluíram sem erros.
 
 A ferramenta não pode proteger contra extensões maliciosas do navegador, sistema operacional comprometido, malware no dispositivo ou alterações futuras no código. A afirmação de processamento local descreve o comportamento do código e do build revisados; alterações devem repetir as verificações antes de publicar.
+
+O build usa um nome com hash para o JavaScript. A página HTML deve ser revalidada pelo navegador após uma publicação para que aponte para o arquivo versionado mais recente.
 
 ## 7. WordPress e isolamento
 
