@@ -1,7 +1,7 @@
 {
   "name": "upscaler-studio",
   "version": "0.1.0",
-  "description": "Aprimoramento de imagens e vídeos com IA no navegador, sem enviar arquivos a servidores",
+  "description": "Ampliação local de imagens e vídeos no navegador",
   "main": "src/main.js",
   "scripts": {
     "build": "webpack --mode production",
@@ -53,3 +53,4 @@
     "node": ">=22.15.0"
   }
 }
+
