@@ -105,7 +105,22 @@ declare global {
 
 let targetResolution = '2x';
 
+document.addEventListener("DOMContentLoaded", bindMediaPicker, { once: true });
 document.addEventListener("DOMContentLoaded", index);
+
+/** Bind the browser-native picker before application startup can fail. */
+function bindMediaPicker(): void {
+    const input = document.getElementById('file-input') as HTMLInputElement | null;
+    const button = document.getElementById('input-button');
+    if (!input || !button) return;
+
+    button.addEventListener('click', () => input.click());
+    input.addEventListener('change', () => {
+        const file = input.files?.[0];
+        input.value = '';
+        if (file) void loadMedia(file);
+    });
+}
 
 //===================  Initial Load ===========================
 
@@ -151,9 +166,11 @@ async function index(): Promise<void> {
     setAcrylic(acrylicEnabled, false);
     acrylicInputs.forEach((input) => input.addEventListener('change', () => setAcrylic(input.checked)));
 
-    const brandLink = document.getElementById('brandLink') as HTMLAnchorElement;
-    brandLink.href = ACERVO_URL;
-    brandLink.target = '_blank';
+    const brandLink = document.getElementById('brandLink');
+    if (brandLink instanceof HTMLAnchorElement) {
+        brandLink.href = ACERVO_URL;
+        brandLink.target = '_blank';
+    }
     const app = document.getElementById('app') as HTMLDivElement;
     const menu = document.getElementById('menu') as HTMLDivElement;
     const moreButton = document.getElementById('b_more') as HTMLButtonElement;
@@ -260,13 +277,6 @@ async function index(): Promise<void> {
     window.initRecording = initRecording;
     window.fullScreenPreview = fullScreenPreview;
     window.togglePause = togglePause;
-    const fileInput = document.getElementById('file-input') as HTMLInputElement;
-    fileInput.addEventListener('change', () => {
-        const file = fileInput.files?.[0];
-        fileInput.value = '';
-        if (file) void loadMedia(file);
-    });
-
     window.addEventListener('dragover', (e: DragEvent) => {
         if (e.dataTransfer && Array.from(e.dataTransfer.types).includes('Files')) {
             e.preventDefault();
@@ -935,3 +945,4 @@ window.addEventListener('keydown', (e) => {
 });
 
 window.togglePanel = togglePanel;
+
