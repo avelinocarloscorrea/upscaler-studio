@@ -60,6 +60,7 @@ module.exports = {
                 { from: 'src/guia.html', to: 'guide.html' },
                 { from: 'src/guia.css', to: 'guia.css' },
                 { from: 'src/guia.css', to: 'guide.css' },
+                { from: 'hostinger.htaccess', to: '.htaccess', toType: 'file' },
                 { from: 'LICENSE', to: 'LICENSE', toType: 'file' },
                 {
                     from: 'node_modules/web-demuxer/dist/wasm-files/web-demuxer.wasm',
