@@ -9,8 +9,8 @@ module.exports = {
     entry: './src/index.ts',
     output: {
         path: path.resolve(__dirname, './dist'),
-        filename: 'main.js',
-        chunkFilename: '[id].main.js',
+        filename: 'main.[contenthash:8].js',
+        chunkFilename: '[id].[contenthash:8].main.js',
         assetModuleFilename: '[name][ext]',
         publicPath: 'auto',
         clean: true,
@@ -95,3 +95,4 @@ module.exports = {
         /Critical dependency/,
     ],
 };
+
