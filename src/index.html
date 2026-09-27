@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+            content="Aprimore imagens e vídeos com inteligência artificial direto no navegador, sem cadastro e sem enviar arquivos para um servidor."
+            name="description">
+    <meta content="Upscaler Studio" property="og:title">
+    <meta
+            content="Aprimore imagens e vídeos com inteligência artificial direto no navegador, sem cadastro e sem enviar arquivos para um servidor."
+            property="og:description">
+    <meta content="Upscaler Studio" property="twitter:title">
+    <meta
+            content="Aprimore imagens e vídeos com inteligência artificial direto no navegador, sem cadastro e sem enviar arquivos para um servidor."
+            property="twitter:description">
+    <meta property="og:type" content="website">
+    <meta content="summary_large_image" name="twitter:card">
+        <meta property="og:site_name" content="Esmeralda Paper">
+        <meta property="og:url" content="https://www.esmeraldapaper.com.br/upscalerstudio/">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#fbfaf7">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self' blob:; img-src 'self' blob: data:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; manifest-src 'self'">
+        <link rel="icon" href="upscaler-studio.svg">
+    <title>Upscaler Studio</title>
+
+
+</head>
+
+
+
+<body x-data="{}">
+<div id="app">
+    <header id="bar">
+        <a class="brand" id="brandLink" rel="noopener noreferrer" title="Mais ferramentas Esmeralda Paper" aria-label="Mais ferramentas Esmeralda Paper">
+            <span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64"><rect x="6" y="9" width="52" height="46" rx="8" fill="var(--surface)" stroke="var(--brand)" stroke-width="3.5"/><circle cx="21" cy="23" r="4" fill="var(--gold)"/><path d="m12 47 14-15 9 9 7-7 10 13H12Z" fill="var(--brand)"/><path d="m47 7 1.8 4.6L54 13.5l-5.2 1.9L47 20l-1.8-4.6-5.2-1.9 5.2-1.9L47 7Z" fill="var(--gold)"/></svg></span>
+            <span class="txt"><span class="t1">Upscaler Studio</span><span class="t2">Esmeralda&nbsp;Paper</span></span>
+        </a>
+        <nav class="steps" aria-label="Etapas">
+            <span class="step on" id="st_video" x-bind:class="{on: $store.state === 'init' || $store.state === 'unsupported', done: ['preview','processing','paused','complete'].includes($store.state)}"><b>1</b><span class="lbl">Mídia</span></span>
+            <i class="step-sep"></i>
+            <span class="step" id="st_upscale" x-bind:class="{on: ['preview','processing','paused'].includes($store.state), done: $store.state === 'complete'}"><b>2</b><span class="lbl">Aprimorar</span></span>
+            <i class="step-sep"></i>
+            <span class="step" id="st_export" x-bind:class="{on: $store.state === 'complete'}"><b>3</b><span class="lbl">Exportar</span></span>
+        </nav>
+        <span class="bar-grow"></span>
+        <span class="stat" x-text="$store.filename || 'Processamento local'" x-show="$store.state !== 'unsupported'"></span>
+        <span class="bar-sep"></span>
+        <button id="b_more" class="iconbtn ghost" type="button" aria-haspopup="menu" aria-expanded="false" title="Mais opções"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
+        <button class="primary cta" type="button" onclick="initRecording()" x-show="$store.state === 'preview'" x-text="$store.mediaKind === 'image' ? 'Baixar PNG' : ($store.target === 'writer' ? 'Escolher destino e iniciar' : 'Iniciar upscale')"></button>
+    </header>
+
+    <aside id="left">
+        <nav class="rail" id="rail" role="tablist" aria-label="Ferramentas">
+            <button type="button" class="on" data-pane="video" role="tab" aria-selected="true" aria-controls="pane-video"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg><i>Mídia</i></button>
+            <button type="button" data-pane="aprimorar" role="tab" aria-selected="false" aria-controls="pane-aprimorar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-2-5.8L4 11l6-2.2L12 3Z"/><path d="m19 14 1 2.5 2.5 1-2.5 1L19 21l-1-2.5-2.5-1 2.5-1 1-2.5Z"/></svg><i>Aprimorar</i></button>
+            <span class="rail-grow"></span>
+            <a href="guia.html" title="Guia do usuário"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.3 2.3 0 1 1 3.8 1.7c-.9.8-1.6 1.2-1.6 2.8m0 3h.01"/></svg><i>Ajuda</i></a>
+        </nav>
+        <div class="panes scrl" id="panes">
+            <section class="pane" id="pane-video" data-pane="video" role="tabpanel">
+                <header class="pane-h"><h2>Sua mídia</h2><p>Imagens e vídeos são processados neste aparelho.</p></header>
+                <div class="grp-block"><div class="grp-title">Arquivo de origem</div><p class="hint">Escolha uma imagem ou vídeo MP4. O arquivo não é enviado a um servidor.</p><div class="privacy-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg><span>Seus arquivos ficam neste aparelho.</span></div></div>
+            </section>
+            <section class="pane" id="pane-aprimorar" data-pane="aprimorar" role="tabpanel" hidden>
+                <header class="pane-h"><h2>Ajustes</h2><p>Configure a ampliação por inteligência artificial.</p></header>
+                <div class="grp-block"><fieldset id="settings" class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
+                    <legend class="sr-only">Tamanho do modelo de IA</legend>
+                    <input type="radio" name="options" id="option1" value="small" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option1"><span class="network-name">Leve</span><span class="network-detail">Mais rápido</span></label>
+                    <input type="radio" name="options" id="option2" value="medium" onclick="switchNetworkSize(this)" autocomplete="off" checked><label for="option2"><span class="network-name">Equilibrado</span><span class="network-detail">Recomendado</span></label>
+                    <input type="radio" name="options" id="option3" value="large" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option3"><span class="network-name">Detalhado</span><span class="network-detail">Mais lento</span></label>
+                </fieldset></div>
+                <div class="grp-block"><fieldset class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
+                    <div class="grp-title">Resolução final</div>
+                    <input type="radio" name="res" id="res2x" value="2x" onchange="window.switchTargetRes(this.value)" autocomplete="off" checked><label for="res2x"><span class="network-name">2× Original</span><span class="network-detail">Nativo da IA</span></label>
+                    <input type="radio" name="res" id="res720" value="720" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res720"><span class="network-name">720p HD</span><span class="network-detail">1280×720</span></label>
+                    <input type="radio" name="res" id="res1080" value="1080" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res1080"><span class="network-name">1080p</span><span class="network-detail">Full HD</span></label>
+                    <input type="radio" name="res" id="res4k" value="2160" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res4k"><span class="network-name">4K</span><span class="network-detail">Ultra HD</span></label>
+                </fieldset></div>
+            </section>
+        </div>
+    </aside>
+
+    <main id="stage" class="scrl">
+        <section id="unsupported-panel" class="state-panel" x-show="$store.state === 'unsupported'">
+            <span class="state-icon warn-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18.5A1.7 1.7 0 0 0 3.3 21h17.4a1.7 1.7 0 0 0 1.5-2.5L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></span>
+            <p class="eyebrow">Compatibilidade do navegador</p><h1>Recurso necessário indisponível</h1>
+            <p>Este navegador não oferece <span id="missing-component" class="inline-code" x-text="$store.component"></span>, necessário para ampliar imagens e processar vídeos localmente.</p>
+            <p class="hint">Use um navegador atualizado com WebGPU. Vídeos também precisam de WebCodecs; imagens continuam disponíveis quando esses codecs não existem.</p>
+        </section>
+
+        <section id="loading-panel" class="state-panel" x-show="$store.state === 'loading'">
+            <span class="spinner" aria-hidden="true"></span><p class="eyebrow">Preparando</p><h1>Carregando mídia</h1><p>A prévia está sendo preparada neste aparelho.</p>
+        </section>
+
+        <section id="error-panel" class="state-panel" x-show="$store.state === 'error'">
+            <span class="state-icon warn-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18.5A1.7 1.7 0 0 0 3.3 21h17.4a1.7 1.7 0 0 0 1.5-2.5L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></span>
+            <p class="eyebrow">Não foi possível continuar</p><h1>Ocorreu um erro</h1><p class="error-message" x-text="$store.error"></p>
+            <button type="button" class="secondary" onclick="location.reload()">Tentar novamente</button>
+        </section>
+
+        <section id="file-load-panel" class="state-panel upload-panel" x-show="$store.state === 'init'">
+            <span class="state-icon upload-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
+            <p class="eyebrow">Upscaler Studio</p><h1>Traga sua imagem ou vídeo para a prancheta</h1>
+            <p>Amplie com IA, compare o resultado e baixe a mídia aprimorada.</p>
+            <button type="button" class="primary upload-button" id="input-button" onclick="chooseFile(this)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Escolher imagem ou vídeo</button>
+            <span class="file-note">PNG · JPEG · WebP · AVIF · BMP · GIF · MP4 · processamento local</span>
+        </section>
+
+        <section id="start-panel" x-show="$store.state === 'preview' || $store.state === 'processing' || $store.state === 'complete' || $store.state === 'paused'">
+            <div class="preview-shell" id="preview-shell">
+            <div class="preview-toolbar"><span class="eyebrow">Comparação</span><button type="button" id="full-screen" onclick="fullScreenPreview()" x-show="$store.state === 'preview'" aria-label="Abrir prévia em tela cheia" title="Tela cheia"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/></svg></button></div>
+            <div class="preview-stage" id="preview-stage">
+                <div id="image-compare-outer"><div id="image-compare"><div id="compare-original"><canvas id="original"></canvas></div><div id="compare-after"><canvas id="upscaled"></canvas></div><div id="compare-divider" aria-hidden="true"><span></span></div><input id="compare-slider" type="range" min="0" max="100" value="50" aria-label="Comparar original e imagem aprimorada"></div></div>
+                <span class="compare-label before-label">Original</span><span class="compare-label after-label">Aprimorado</span>
+            </div>
+            <div class="canvasbar" id="canvasbar" x-show="$store.state === 'preview' || $store.state === 'processing' || $store.state === 'paused' || $store.state === 'complete'">
+                <button type="button" class="iconbtn" id="b_pl" aria-label="Alternar painel esquerdo" title="Alternar painel esquerdo ( [ )"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
+                <i class="cb-sep"></i>
+                <button type="button" class="iconbtn" id="b_zout" aria-label="Reduzir zoom" title="Reduzir zoom ( - )"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+                <button type="button" class="zval-btn" id="zval" aria-label="Redefinir zoom" title="Redefinir zoom ( 0 )">100%</button>
+                <button type="button" class="iconbtn" id="b_zin" aria-label="Ampliar zoom" title="Ampliar zoom ( + )"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m-7-7h14"/></svg></button>
+                <button type="button" class="iconbtn" id="b_fit" aria-label="Ajustar à tela" title="Ajustar à tela ( . )"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10V4h6m10 6V4h-6m-6 10v6h6m10-6v6h-6"/></svg></button>
+                <button type="button" class="iconbtn" id="b_1x" aria-label="Tamanho real" title="Tamanho real 1:1 ( 1 )"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3H3v7m11-7h7v7m-7 11h7v-7M3 14v7h7"/></svg></button>
+                <i class="cb-sep"></i>
+                <button type="button" class="iconbtn" id="b_pr" aria-label="Alternar painel direito" title="Alternar painel direito ( ] )"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg></button>
+                <button type="button" class="iconbtn" id="b_zen" aria-label="Modo foco" title="Modo foco ( F )"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/></svg></button>
+            </div>
+            </div>
+            <div id="preview" class="preview-caption" x-show="$store.state === 'preview'">
+                <span class="eyebrow" x-text="$store.mediaKind === 'image' ? 'Prévia da imagem' : 'Prévia do vídeo'"></span><p><strong x-text="$store.filename"></strong><span> será ampliado para </span><strong><span x-text="$store.outWidth"></span> × <span x-text="$store.outHeight"></span> px</strong><span x-show="$store.mediaKind === 'video'"> · arquivo estimado em </span><strong x-text="$store.size"></strong></p>
+            </div>
+            <div id="info" class="process-info" x-show="$store.state === 'processing' || $store.state === 'paused'">
+                <div class="process-copy"><div><span class="eyebrow" x-text="$store.state === 'paused' ? 'Processamento pausado' : 'Aprimorando vídeo'"></span><p><strong x-text="$store.filename"></strong><span> · tempo restante </span><strong x-text="$store.eta"></strong></p></div><span class="progress-value" x-text="Math.round($store.progress) + '%' "></span></div>
+                <div class="progress-track" id="progress"><div class="progress-fill" role="progressbar" x-bind:style="{width: $store.progress + '%'}" x-bind:aria-valuenow="$store.progress" aria-valuemin="0" aria-valuemax="100"></div></div>
+                <button type="button" class="secondary mobile-process-action" onclick="togglePause()" x-text="$store.state === 'paused' ? 'Continuar' : 'Pausar processamento'"></button>
+            </div>
+            <div id="download-link" class="complete-panel" x-show="$store.state === 'complete'">
+                <span class="state-icon success-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span><div class="complete-copy"><p class="eyebrow">Upscale concluído</p><h2>Sua mídia está pronta</h2><p x-show="$store.target === 'writer'">Salva como <strong class="inline-code" x-text="$store.download_name"></strong></p><p class="support-note">O processamento aconteceu no seu navegador. Nenhum arquivo saiu deste aparelho.</p></div>
+                <a x-bind:href="$store.download_url" x-bind:download="$store.download_name" x-show="$store.target === 'blob'" class="primary download-button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v3h16v-3"/></svg>Baixar arquivo</a>
+                <button type="button" class="secondary another-button" onclick="location.reload()">Escolher outro arquivo</button>
+            </div>
+        </section>
+    </main>
+
+    <aside id="right">
+        <header class="aside-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-2-5.8L4 11l6-2.2L12 3Z"/><path d="m19 14 1 2.5 2.5 1-2.5 1L19 21l-1-2.5-2.5-1 2.5-1 1-2.5Z"/></svg>Aprimoramento</header>
+        <div class="inspector-section file-summary" x-show="$store.state === 'preview' || $store.state === 'processing' || $store.state === 'paused' || $store.state === 'complete'">
+            <div class="grp-title">Saída prevista</div>
+            <div class="summary-row"><span>Resolução</span><strong><span x-text="$store.outWidth"></span> × <span x-text="$store.outHeight"></span></strong></div>
+            <div class="summary-row"><span>Tamanho estimado</span><strong x-text="$store.size"></strong></div>
+            <div class="summary-row"><span>Formato</span><strong x-text="$store.mediaKind === 'image' ? 'PNG' : 'MP4'"></strong></div>
+        </div>
+        <div class="inspector-actions" x-show="$store.state === 'preview' || $store.state === 'processing' || $store.state === 'paused'">
+            <button type="button" class="primary action-button" onclick="initRecording()" x-show="$store.state === 'preview'" x-text="$store.mediaKind === 'image' ? 'Baixar PNG' : ($store.target === 'writer' ? 'Escolher destino e iniciar' : 'Iniciar upscale')"></button>
+            <button type="button" class="secondary action-button" onclick="togglePause()" x-show="$store.state === 'processing' || $store.state === 'paused'" x-text="$store.state === 'paused' ? 'Continuar' : 'Pausar processamento'"></button>
+            <p class="hint" x-text="$store.mediaKind === 'image' ? 'A saída segue a resolução escolhida em Aprimorar. O arquivo permanece neste aparelho.' : 'A saída segue a resolução escolhida. O tempo depende do vídeo e do hardware local.'"></p>
+        </div>
+        <div class="inspector-empty" x-show="$store.state === 'init' || $store.state === 'unsupported'">
+            <span class="inspector-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18m9-9H3"/></svg></span><p>As opções de saída aparecem aqui depois que você escolher uma imagem ou vídeo.</p>
+        </div>
+        <div class="inspector-foot"><span class="privacy-dot"></span>Processamento no dispositivo</div>
+    </aside>
+</div>
+<input id="file-input" type="file" accept="image/png,image/jpeg,image/webp,image/avif,image/bmp,image/gif,video/mp4" hidden>
+
+<div id="menu" class="scrl" role="menu" hidden>
+    <div class="menu-h">Upscaler Studio</div>
+    <button id="m_choose" type="button" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Escolher imagem ou vídeo</button>
+    <button id="m_appearance" type="button" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2"/></svg>Aparência</button>
+    <div class="menu-h">Painéis</div>
+    <button id="m_toggle_left" type="button" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg><span>Ocultar painel esquerdo</span></button>
+    <button id="m_toggle_right" type="button" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg><span>Ocultar painel direito</span></button>
+    <label class="row menu-acrylic-row"><input type="checkbox" id="menu-acrylic-toggle"> Painéis translúcidos</label>
+    <div class="msep"></div>
+    <a id="m_guide" href="guia.html" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.3 2.3 0 1 1 3.8 1.7c-.9.8-1.6 1.2-1.6 2.8m0 3h.01"/></svg>Guia do usuário</a>
+    <button id="m_privacy" type="button" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg>Privacidade</button>
+    <button id="m_about" type="button" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></svg>Sobre e licença</button>
+    <a id="m_acervo-menu" href="https://www.esmeraldapaper.com.br/ferramentas/" target="_blank" rel="noopener noreferrer" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Mais ferramentas</a>
+    <a href="https://www.esmeraldapaper.com.br/avaliar-ferramentas/?tool=upscaler" target="_blank" rel="noopener noreferrer" role="menuitem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-2-5.8L4 11l6-2.2L12 3Z"/></svg>Avaliar esta ferramenta</a>
+</div>
+
+<dialog id="appearance-dialog">
+    <div class="dhead">Aparência <button class="iconbtn ghost" type="button" data-close aria-label="Fechar">×</button></div>
+    <div class="dbody">
+        <div class="grp-title">Tema</div>
+        <fieldset class="theme-options" aria-label="Tema da interface">
+            <input type="radio" name="theme" id="theme-system" value="system" checked><label for="theme-system"><span class="theme-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z"/></svg></span><span><b>Automático</b><small>Seguir o sistema</small></span></label>
+            <input type="radio" name="theme" id="theme-light" value="light"><label for="theme-light"><span class="theme-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></span><span><b>Claro</b><small>Sempre claro</small></span></label>
+            <input type="radio" name="theme" id="theme-dark" value="dark"><label for="theme-dark"><span class="theme-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5 8.5 8.5 0 1 0 20.5 15.5Z"/></svg></span><span><b>Escuro</b><small>Sempre escuro</small></span></label>
+        </fieldset>
+        <div class="grp-block acrylic-controls">
+            <div class="grp-title">Painéis</div>
+            <label class="setting-row" for="acrylic-toggle"><span><b>Painéis translúcidos</b><small>Vidro acrílico sobre a prancheta</small></span><input type="checkbox" id="acrylic-toggle"></label>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="privacy-dialog">
+    <div class="dhead">Privacidade <button class="iconbtn ghost" type="button" data-close aria-label="Fechar">×</button></div>
+    <div class="dbody"><p>Imagens e vídeos são processados somente neste aparelho. O arquivo escolhido não é enviado a servidores, CDNs ou serviços de nuvem. Modelos de IA, tipografia e o demuxer WebAssembly ficam embutidos no próprio app.</p><p>Preferências de tema e painéis ficam no armazenamento local do navegador. Links externos do menu (guia da marca, código-fonte) só abrem se você clicar neles.</p><p><a href="https://www.esmeraldapaper.com.br/politica-de-privacidade/#ferramentas-gratuitas" target="_blank" rel="noopener noreferrer">Política de privacidade da Esmeralda Paper</a></p></div>
+</dialog>
+
+<dialog id="about-dialog">
+    <div class="dhead">Sobre o Upscaler Studio <button class="iconbtn ghost" type="button" data-close aria-label="Fechar">×</button></div>
+    <div class="dbody"><p>Upscaler Studio amplia imagens e vídeos usando WebSR e WebGPU, diretamente no navegador.</p><p>Baseado no <a href="https://github.com/sb2702/free-ai-video-upscaler" target="_blank" rel="noopener noreferrer">Free AI Video Upscaler, do desenvolvedor original</a>. A licença MIT permite usar, modificar e redistribuir o código, mantendo os avisos originais de copyright e licença. Consulte o arquivo LICENSE.</p><p><a href="https://github.com/avelinocarloscorrea/upscaler-studio" target="_blank" rel="noopener noreferrer">Código-fonte do Upscaler Studio</a></p></div>
+</dialog>
+</body>
+
+</html>
