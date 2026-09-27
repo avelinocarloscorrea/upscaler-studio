@@ -1,6 +1,6 @@
 # Upscaler Studio
 
-Aprimore imagens e vídeos com IA diretamente no navegador. O conteúdo é processado no dispositivo, sem cadastro e sem enviar arquivos para servidores.
+Amplie imagens e vídeos em 2× diretamente no navegador. O conteúdo é processado no dispositivo e não é enviado a servidores.
 
 ## Recursos
 
@@ -30,3 +30,4 @@ O processamento requer WebGPU. Vídeos também usam WebCodecs. Chrome ou Edge at
 Este projeto é baseado no [Free AI Video Upscaler](https://github.com/sb2702/free-ai-video-upscaler) e usa o WebSR SDK. A licença MIT permite uso, modificação e redistribuição, desde que os avisos de copyright e o texto da licença original sejam mantidos. Consulte [LICENSE](LICENSE).
 
 As fontes Arimo e Playfair Display estão sob SIL Open Font License 1.1; os avisos estão em `src/img/LICENSE-arimo.txt` e `src/img/LICENSE-playfair-display.txt`.
+
