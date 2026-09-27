@@ -1,15 +1,16 @@
 # Upscaler Studio
 
-Aprimore vídeos com IA diretamente no navegador. O processamento acontece no dispositivo, sem cadastro e sem enviar vídeos para servidores.
+Aprimore imagens e vídeos com IA diretamente no navegador. O conteúdo é processado no dispositivo, sem cadastro e sem enviar arquivos para servidores.
 
 ## Recursos
 
-- Ampliação de vídeo em 2× com comparação entre original e resultado.
+- Ampliação de imagens e vídeos em 2× com comparação entre original e resultado.
 - Modelos com opções de velocidade e nível de detalhe.
-- Exportação MP4 com salvamento local ou download.
+- Exportação PNG e MP4 com download local.
 - Tema automático (claro/escuro), seleção manual e painéis translúcidos.
+- Guia do usuário integrado.
 
-## Executar localmente
+## Desenvolvimento
 
 Requer Node.js 22.15 ou superior.
 
@@ -20,19 +21,9 @@ npm run serve
 
 ## Publicar na Hostinger
 
-Este projeto gera um site estático; não precisa manter um processo Node.js rodando depois do build.
+O projeto gera um site estático; depois da compilação, não precisa manter um processo Node.js em execução. Na configuração de Node.js Web App da Hostinger, use Node.js 22 ou superior, `npm install`, `npm run build` e `dist` como diretório de saída. Deixe o comando de inicialização vazio.
 
-Na configuração de Node.js Web App da Hostinger, escolha o tipo **Other** e informe:
-
-- **Versão do Node.js:** 22 ou superior
-- **Comando de instalação:** `npm install`
-- **Comando de build:** `npm run build`
-- **Diretório de saída:** `dist`
-- **Entry file / comando de inicialização:** deixe vazio
-
-A pasta `dist` contém o `index.html` e os arquivos compilados para publicação. O repositório também inclui `package-lock.json`; após remover as dependências antigas de Grunt, o `npm install` sincroniza o lockfile com `package.json` durante o deploy.
-
-O projeto usa WebGPU, WebCodecs e a API de acesso a arquivos do navegador. Chrome ou Edge atualizados em computador são recomendados.
+O processamento requer WebGPU. Vídeos também usam WebCodecs. Chrome ou Edge atualizados em computador são recomendados; suporte depende do sistema, navegador e driver gráfico.
 
 ## Origem e licença
 

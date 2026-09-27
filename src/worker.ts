@@ -10,7 +10,6 @@ import type {
 
 // Processors
 import pipelineProcessor from './processors/pipeline-processor';
- import mediabunnyProcessor from './processors/mediabunny-processor'; // Fallback if needed
 
 // Worker state
 let gpu: any | false;
@@ -21,6 +20,12 @@ let resolution: Resolution;
 let ctx: ImageBitmapRenderingContext | null;
 let pauseLock: Promise<void> | null = null;
 let resolvePause: (() => void) | null = null;
+let currentBitmap: ImageBitmap | null = null;
+const gpuEnums = globalThis as typeof globalThis & {
+  GPUBufferUsage?: { COPY_DST: number; MAP_READ: number };
+  GPUMapMode?: { READ: number };
+  GPUTextureUsage?: { COPY_SRC: number; RENDER_ATTACHMENT: number };
+};
 
 // Default weights
 const weights = require('./weights/cnn-2x-m-rl.json');
@@ -41,21 +46,43 @@ async function isSupported(): Promise<void> {
  * Initialize the worker with canvases and create WebSR instance
  */
 async function init(config: InitData): Promise<void> {
+  if (websr) {
+    try { await websr.destroy(); } catch {}
+  }
+
   if (!gpu) {
     gpu = await WebSR.initWebGPU();
   }
 
   websr = new WebSR({
-    network_name: "anime4k/cnn-2x-m",
-    weights,
+    network_name: config.networkName as any,
+    weights: config.weights,
     resolution: config.resolution,
     gpu: gpu,
+    debug: false,
     canvas: config.upscaled as any // OffscreenCanvas is valid but types may be strict
   });
+
+  const gpuTextureUsage = gpuEnums.GPUTextureUsage;
+  const copySrcUsage = (gpuTextureUsage?.COPY_SRC ?? 4) | (gpuTextureUsage?.RENDER_ATTACHMENT ?? 16);
+  try {
+    websr.context.context.configure({
+      device: websr.context.device,
+      format: (navigator as any).gpu?.getPreferredCanvasFormat?.() ?? 'bgra8unorm',
+      usage: copySrcUsage,
+    });
+  } catch (err) {
+    console.warn('Could not configure WebGPU canvas usage:', err);
+  }
 
   resolution = config.resolution;
   upscaled_canvas = config.upscaled;
   original_canvas = config.original;
+
+  if (currentBitmap && currentBitmap !== config.bitmap) {
+    try { currentBitmap.close(); } catch {}
+  }
+  currentBitmap = config.bitmap;
 
   ctx = original_canvas.getContext('bitmaprenderer');
 
@@ -69,15 +96,82 @@ async function init(config: InitData): Promise<void> {
   if (ctx) {
     ctx.transferFromImageBitmap(bitmap2);
   }
+  postMessage({ cmd: 'ready' } satisfies WorkerResponseMessage);
 }
 
 /**
  * Switch to a different AI upscaling network
  */
 async function switchNetwork(name: string, weights: any, bitmap: ImageBitmap): Promise<void> {
+  if (currentBitmap && currentBitmap !== bitmap) {
+    try { currentBitmap.close(); } catch {}
+  }
+  currentBitmap = bitmap;
   websr.switchNetwork(name as any, weights);
 
   await websr.render(bitmap as any);
+}
+
+async function exportUpscaledImage(targetResolution?: string): Promise<Blob> {
+  if (currentBitmap) {
+    await websr.render(currentBitmap as any);
+  }
+
+  const device = websr.context.device;
+  const texture = websr.context.context.getCurrentTexture();
+  const width = resolution.width * 2;
+  const height = resolution.height * 2;
+  const bytesPerRow = Math.ceil((width * 4) / 256) * 256;
+  const bufferUsage = (gpuEnums.GPUBufferUsage?.COPY_DST ?? 8) | (gpuEnums.GPUBufferUsage?.MAP_READ ?? 1);
+  const readBuffer = device.createBuffer({
+    size: bytesPerRow * height,
+    usage: bufferUsage,
+  });
+  const encoder = device.createCommandEncoder();
+  encoder.copyTextureToBuffer(
+    { texture },
+    { buffer: readBuffer, bytesPerRow, rowsPerImage: height },
+    { width, height, depthOrArrayLayers: 1 },
+  );
+  device.queue.submit([encoder.finish()]);
+  await device.queue.onSubmittedWorkDone();
+  await readBuffer.mapAsync(gpuEnums.GPUMapMode?.READ ?? 1);
+
+  const source = new Uint8Array(readBuffer.getMappedRange());
+  const pixels = new Uint8ClampedArray(width * height * 4);
+  const isBgra = texture.format.startsWith('bgra');
+  for (let row = 0; row < height; row++) {
+    const sourceRow = row * bytesPerRow;
+    const targetRow = row * width * 4;
+    for (let column = 0; column < width; column++) {
+      const sourcePixel = sourceRow + column * 4;
+      const targetPixel = targetRow + column * 4;
+      pixels[targetPixel] = source[sourcePixel + (isBgra ? 2 : 0)];
+      pixels[targetPixel + 1] = source[sourcePixel + 1];
+      pixels[targetPixel + 2] = source[sourcePixel + (isBgra ? 0 : 2)];
+      pixels[targetPixel + 3] = source[sourcePixel + 3];
+    }
+  }
+  readBuffer.unmap();
+  readBuffer.destroy();
+
+  const outputCanvas = new OffscreenCanvas(width, height);
+  const outputContext = outputCanvas.getContext('2d');
+  if (!outputContext) throw new Error('Não foi possível criar a imagem PNG de saída.');
+  outputContext.putImageData(new ImageData(pixels, width, height), 0, 0);
+
+  if (targetResolution && targetResolution !== '2x') {
+      const targetHeight = parseInt(targetResolution, 10);
+      const targetWidth = Math.round((width / height) * targetHeight);
+      const resizeCanvas = new OffscreenCanvas(targetWidth, targetHeight);
+      const resizeCtx = resizeCanvas.getContext('2d');
+      if (resizeCtx) {
+          resizeCtx.drawImage(outputCanvas, 0, 0, targetWidth, targetHeight);
+          return resizeCanvas.convertToBlob({ type: 'image/png' });
+      }
+  }
+
+  return outputCanvas.convertToBlob({ type: 'image/png' });
 }
 
 
@@ -93,7 +187,8 @@ async function switchNetwork(name: string, weights: any, bitmap: ImageBitmap): P
 self.onmessage = async function (event: MessageEvent<WorkerRequestMessage>) {
   if (!event.data.cmd) return;
 
-  switch (event.data.cmd) {
+  try {
+    switch (event.data.cmd) {
     case 'init':
       await init(event.data.data);
       break;
@@ -117,30 +212,38 @@ self.onmessage = async function (event: MessageEvent<WorkerRequestMessage>) {
         postMessage({ cmd: 'resumed' } satisfies WorkerResponseMessage);
       }
       break;
-    
+
     case 'process':
-
-
       await pipelineProcessor({
-        inputHandle: event.data.inputHandle,
+        inputFile: event.data.inputFile,
         outputHandle: event.data.outputHandle,
+        targetResolution: event.data.targetResolution,
         websr,
         upscaled_canvas,
         original_canvas,
         resolution,
         getPauseLock: () => pauseLock
       });
-
-     // To use MediaBunny instead, uncomment above import and use:
- //    await mediabunnyProcessor({ inputHandle: event.data.inputHandle, outputHandle: event.data.outputHandle, websr, upscaled_canvas, original_canvas, resolution, getPauseLock: () => pauseLock });
       break;
 
-    case 'network':
-      await switchNetwork(
-        event.data.data.name,
-        event.data.data.weights,
-        event.data.data.bitmap
-      );
+    case 'export-image': {
+      const blob = await exportUpscaledImage(event.data.targetResolution);
+      postMessage({ cmd: 'image-finished', data: blob } satisfies WorkerResponseMessage);
       break;
+    }
+
+      case 'network':
+        await switchNetwork(
+          event.data.data.name,
+          event.data.data.weights,
+          event.data.data.bitmap
+        );
+        break;
+    }
+  } catch (error) {
+    postMessage({
+      cmd: 'error',
+      data: error instanceof Error ? error.message : 'O processamento falhou.',
+    } satisfies WorkerResponseMessage);
   }
 };

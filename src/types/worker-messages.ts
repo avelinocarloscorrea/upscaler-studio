@@ -13,7 +13,8 @@ export type WorkerRequestMessage =
   | { cmd: 'isSupported' }
   | { cmd: 'init'; data: InitData }
   | { cmd: 'network'; data: NetworkData }
-  | { cmd: 'process'; inputHandle: FileSystemFileHandle; outputHandle?: FileSystemFileHandle }
+  | { cmd: 'process'; inputFile: File; outputHandle?: FileSystemFileHandle; targetResolution?: string }
+  | { cmd: 'export-image'; targetResolution?: string }
   | { cmd: 'pause' }
   | { cmd: 'resume' };
 
@@ -22,6 +23,8 @@ export interface InitData {
   upscaled: OffscreenCanvas;
   original: OffscreenCanvas;
   resolution: Resolution;
+  networkName: string;
+  weights: any;
 }
 
 export interface NetworkData {
@@ -38,6 +41,8 @@ export type WorkerResponseMessage =
   | { cmd: 'process' }
   | { cmd: 'error'; data: string }
   | { cmd: 'finished'; data: Blob | null }
+  | { cmd: 'image-finished'; data: Blob }
+  | { cmd: 'ready' }
   | { cmd: 'paused' }
   | { cmd: 'resumed' };
 

@@ -11,13 +11,14 @@ import WebSR from '@websr/websr';
 import InMemoryStorage from './in-memory-storage';
 
 interface ProcessorArgs {
-  inputHandle: FileSystemFileHandle;
+  inputFile: File;
   outputHandle?: FileSystemFileHandle;
   websr: WebSR;
   upscaled_canvas: OffscreenCanvas;
   original_canvas: OffscreenCanvas;
   resolution: { width: number; height: number };
   getPauseLock?: () => Promise<void> | null;
+  targetResolution?: string;
 }
 
 
@@ -119,7 +120,9 @@ class VideoUpscaleStream extends TransformStream<
     private websr: WebSR,
     private upscaled_canvas: OffscreenCanvas,
     private original_canvas: OffscreenCanvas,
-    getPauseLock?: () => Promise<void> | null
+    getPauseLock?: () => Promise<void> | null,
+    targetWidth?: number,
+    targetHeight?: number
   ) {
     super(
       {
@@ -148,8 +151,27 @@ class VideoUpscaleStream extends TransformStream<
             ctx.transferFromImageBitmap(beforeBitmap);
           }
 
+          let sourceCanvas: OffscreenCanvas = upscaled_canvas;
+
+          // Resize if custom resolution is set
+          if (targetWidth && targetHeight && (targetWidth !== frame.codedWidth * 2 || targetHeight !== frame.codedHeight * 2)) {
+             const resizedCanvas = new OffscreenCanvas(targetWidth, targetHeight);
+             const resizeCtx = resizedCanvas.getContext('2d');
+             if (resizeCtx) {
+                 // VideoFrame is reliably drawable; raw WebGPU canvases are not in every browser
+                 const tempFrame = new VideoFrame(upscaled_canvas, {
+                   timestamp: frame.timestamp,
+                   duration: frame.duration,
+                   alpha: 'discard',
+                 });
+                 resizeCtx.drawImage(tempFrame, 0, 0, targetWidth, targetHeight);
+                 tempFrame.close();
+                 sourceCanvas = resizedCanvas;
+             }
+          }
+
           // Create upscaled VideoFrame from canvas
-          const upscaledFrame = new VideoFrame(upscaled_canvas, {
+          const upscaledFrame = new VideoFrame(sourceCanvas, {
             timestamp: frame.timestamp,
             duration: frame.duration,
             alpha: "discard"
@@ -253,13 +275,9 @@ function createVideoMuxerWriter(
           const eta = Math.round(((100 - progress) / processingRate) / 1000);
           postMessage({ cmd: 'eta', data: prettyTime(eta) });
         } else {
-          postMessage({ cmd: 'eta', data: 'calculating...' });
+          postMessage({ cmd: 'eta', data: 'calculando...' });
         }
       }
-    },
-
-    close() {
-      console.log('All video frames written to muxer');
     },
 
     abort(reason) {
@@ -284,10 +302,6 @@ function createAudioMuxerWriter(
         configWritten = true;
         await audioSource.add(EncodedPacket.fromEncodedChunk(chunk), config);
       }
-    },
-
-    close() {
-      console.log('All audio chunks written to muxer');
     },
 
     abort(reason) {
@@ -315,17 +329,17 @@ function prettyTime(secs: number): string {
  * Main pipeline processor using Streams API
  */
 export default async function pipelineProcessor(args: ProcessorArgs): Promise<void> {
-  const { inputHandle, outputHandle, websr, upscaled_canvas, original_canvas, resolution, getPauseLock } = args;
+  const { inputFile, outputHandle, websr, upscaled_canvas, original_canvas, resolution, getPauseLock } = args;
 
-  console.log('Starting pipeline processor with Streams API');
+  const file = inputFile;
 
-  // Get file from handle
-  const file = await inputHandle.getFile();
+  // Local WASM only — never fetch demuxer assets from a CDN
+  const wasmFilePath = new URL(
+    '../../node_modules/web-demuxer/dist/wasm-files/web-demuxer.wasm',
+    import.meta.url,
+  ).href;
 
-  // Initialize demuxer
-  const demuxer = new WebDemuxer({
-    wasmFilePath: "https://cdn.jsdelivr.net/npm/web-demuxer@latest/dist/wasm-files/web-demuxer.wasm",
-  });
+  const demuxer = new WebDemuxer({ wasmFilePath });
 
   await demuxer.load(file);
 
@@ -335,7 +349,7 @@ export default async function pipelineProcessor(args: ProcessorArgs): Promise<vo
   const audioTrack = mediaInfo.streams.find((s: any) => s.codec_type_string === 'audio');
 
   if (!videoTrack) {
-    return postMessage({ cmd: 'error', data: 'No video track found' });
+    return postMessage({ cmd: 'error', data: 'Nenhuma faixa de vídeo encontrada no arquivo.' });
   }
 
   const videoDecoderConfig = await demuxer.getDecoderConfig('video');
@@ -344,6 +358,17 @@ export default async function pipelineProcessor(args: ProcessorArgs): Promise<vo
   const duration = videoTrack.duration;
   const width = resolution.width;
   const height = resolution.height;
+
+  let targetWidth = width * 2;
+  let targetHeight = height * 2;
+  
+  if (args.targetResolution && args.targetResolution !== '2x') {
+      targetHeight = parseInt(args.targetResolution, 10);
+      targetWidth = Math.round((width / height) * targetHeight);
+      // ensure even dimensions for h264
+      if (targetWidth % 2 !== 0) targetWidth++;
+      if (targetHeight % 2 !== 0) targetHeight++;
+  }
 
   // Set up MediaBunny output
   let target: StreamTarget;
@@ -373,12 +398,12 @@ export default async function pipelineProcessor(args: ProcessorArgs): Promise<vo
   const framerate = (fpsNum && fpsDen) ? fpsNum / fpsDen : 30;
 
   // Configure encoder
-  const bitrate = 2.5e6 * (width * height * 4) / (1280 * 720);
+  const bitrate = 2.5e6 * (targetWidth * targetHeight) / (1280 * 720);
 
   const videoEncoderConfig: VideoEncoderConfig = {
     codec: 'avc1.4d0034',
-    width: width * 2,
-    height: height * 2,
+    width: targetWidth,
+    height: targetHeight,
     bitrate: Math.round(bitrate),
     framerate: framerate,
   };
@@ -400,7 +425,7 @@ export default async function pipelineProcessor(args: ProcessorArgs): Promise<vo
   const pipeline = chunkStream
     .pipeThrough(new DemuxerTrackingStream())
     .pipeThrough(new VideoDecoderStream(videoDecoderConfig, getPauseLock))
-    .pipeThrough(new VideoUpscaleStream(websr, upscaled_canvas, original_canvas, getPauseLock))
+    .pipeThrough(new VideoUpscaleStream(websr, upscaled_canvas, original_canvas, getPauseLock, targetWidth, targetHeight))
     .pipeThrough(new VideoEncoderStream(videoEncoderConfig))
     .pipeTo(videoWriter);
 
@@ -411,7 +436,6 @@ export default async function pipelineProcessor(args: ProcessorArgs): Promise<vo
 
   // Process audio (passthrough)
   if (audioConfig && audioSource) {
-    console.log('Processing audio...');
     const audioStream = demuxer.read('audio', 0) as ReadableStream<EncodedAudioChunk>;
     const audioWriter = createAudioMuxerWriter(audioSource, audioConfig);
     await audioStream.pipeTo(audioWriter);
@@ -427,6 +451,4 @@ export default async function pipelineProcessor(args: ProcessorArgs): Promise<vo
     const blob = storage!.toBlob('video/mp4');
     postMessage({ cmd: 'finished', data: blob });
   }
-
-  console.log('Pipeline processing complete!');
 }
