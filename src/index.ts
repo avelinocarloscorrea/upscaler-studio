@@ -91,14 +91,13 @@ const networks: Record<NetworkSize, { name: string }> = {
 // Declare global window functions for Alpine to call and File System Access API
 declare global {
     interface Window {
-        chooseFile: (e?: Event) => Promise<void>;
+        chooseFile: () => void;
         initRecording: () => Promise<void>;
         fullScreenPreview: (e?: Event) => Promise<void>;
         switchNetworkSize: (el: HTMLInputElement) => Promise<void>;
         switchNetworkStyle: (el: HTMLInputElement) => Promise<void>;
         switchTargetRes: (res: string) => void;
         showSaveFilePicker: (options?: any) => Promise<FileSystemFileHandle>;
-        showOpenFilePicker: (options?: any) => Promise<FileSystemFileHandle[]>;
         togglePause: () => void;
         togglePanel: (side: 'left' | 'right', forceHidden?: boolean) => void;
     }
@@ -313,53 +312,10 @@ function showUnsupported(text: string): void {
     Alpine.store('state', 'unsupported');
 }
 
-/**
- * Prompt user to choose a video or image file using File System Access API
- */
-async function chooseFile(): Promise<void> {
-    if (!window.showOpenFilePicker) {
-        (document.getElementById('file-input') as HTMLInputElement).click();
-        return;
-    }
-
-    try {
-        const [fileHandle] = await window.showOpenFilePicker({
-            types: [
-                {
-                    description: 'Imagens e vídeos suportados',
-                    accept: {
-                        'image/png': ['.png'],
-                        'image/jpeg': ['.jpg', '.jpeg'],
-                        'image/webp': ['.webp'],
-                        'image/avif': ['.avif'],
-                        'image/bmp': ['.bmp'],
-                        'image/gif': ['.gif'],
-                        'video/mp4': ['.mp4'],
-                    }
-                },
-                {
-                    description: 'Imagens (PNG, JPEG, WebP, AVIF, BMP, GIF)',
-                    accept: {
-                        'image/png': ['.png'],
-                        'image/jpeg': ['.jpg', '.jpeg'],
-                        'image/webp': ['.webp'],
-                        'image/avif': ['.avif'],
-                        'image/bmp': ['.bmp'],
-                        'image/gif': ['.gif'],
-                    }
-                },
-                {
-                    description: 'Vídeo MP4',
-                    accept: { 'video/mp4': ['.mp4'] }
-                },
-            ],
-            multiple: false
-        });
-        await loadMedia(await fileHandle.getFile());
-    } catch (error) {
-        if (error instanceof DOMException && error.name === 'AbortError') return;
-        showError(error instanceof Error ? error.message : 'Não foi possível abrir este arquivo.');
-    }
+/** Open the standard browser picker for consistent image and MP4 support. */
+function chooseFile(): void {
+    const input = document.getElementById('file-input') as HTMLInputElement;
+    input.click();
 }
 
 async function loadMedia(file: File): Promise<void> {
