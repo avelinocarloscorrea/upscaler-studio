@@ -9,12 +9,28 @@ Aprimore vídeos com IA diretamente no navegador. O processamento acontece no di
 - Exportação MP4 com salvamento local ou download.
 - Tema automático (claro/escuro), seleção manual e painéis translúcidos.
 
-## Desenvolvimento
+## Executar localmente
+
+Requer Node.js 22.15 ou superior.
 
 ```sh
 npm install
 npm run serve
 ```
+
+## Publicar na Hostinger
+
+Este projeto gera um site estático; não precisa manter um processo Node.js rodando depois do build.
+
+Na configuração de Node.js Web App da Hostinger, escolha o tipo **Other** e informe:
+
+- **Versão do Node.js:** 22 ou superior
+- **Comando de instalação:** `npm install`
+- **Comando de build:** `npm run build`
+- **Diretório de saída:** `dist`
+- **Entry file / comando de inicialização:** deixe vazio
+
+A pasta `dist` contém o `index.html` e os arquivos compilados para publicação. O repositório também inclui `package-lock.json`; após remover as dependências antigas de Grunt, o `npm install` sincroniza o lockfile com `package.json` durante o deploy.
 
 O projeto usa WebGPU, WebCodecs e a API de acesso a arquivos do navegador. Chrome ou Edge atualizados em computador são recomendados.
 
