@@ -38,7 +38,7 @@ Os links para Esmeralda Paper, avaliação, política de privacidade e GitHub s�
 - `src/weights/`: pesos dos modelos distribuídos dentro do pacote.
 - `src/guia.html` e `src/guia.css`: guia do usuário que acompanha o build.
 - `src/img/`: marca, fontes e avisos de licença.
-- `webpack.config.js`: gera a pasta estática `dist/`, usa nome versionado no JavaScript para evitar código antigo em cache e copia WebAssembly e documentos.
+- `webpack.config.js`: gera a pasta estática `dist/`, usa nome versionado no JavaScript para evitar código antigo em cache e copia WebAssembly, documentos e regras de cabeçalho do Hostinger (`hostinger.htaccess`).
 
 ## 4. Tipos de mídia e requisitos
 
@@ -81,15 +81,16 @@ As dependências antigas `grunt-cloudfront` e Grunt foram removidas do `package.
 
 A ferramenta não pode proteger contra extensões maliciosas do navegador, sistema operacional comprometido, malware no dispositivo ou alterações futuras no código. A afirmação de processamento local descreve o comportamento do código e do build revisados; alterações devem repetir as verificações antes de publicar.
 
-O build usa um nome com hash para o JavaScript. A página HTML deve ser revalidada pelo navegador após uma publicação para que aponte para o arquivo versionado mais recente.
+O build usa um nome com hash para o JavaScript e publica cabeçalhos que evitam manter uma versão antiga do HTML no cache do navegador.
 
 ## 7. WordPress e isolamento
 
-A página de ferramentas do WordPress deve exibir apenas descrição, ícone e links para abrir o app, guia e código-fonte. Não incorporar o app em `iframe`, não carregar seus scripts no WordPress e não transmitir arquivos entre domínios. Essa integração ainda depende da publicação no Hostinger.
+A página de ferramentas do WordPress deve exibir apenas descrição, ícone e links para abrir o app, guia e código-fonte. Não incorporar o app em `iframe`, não carregar seus scripts no WordPress e não transmitir arquivos entre domínios. A página pública apresenta um link externo simples para abrir a ferramenta.
 
 O caminho curto `/upscalerstudio/` redireciona para o subdomínio independente. Isso separa a aplicação estática do WordPress e evita dependências de plugins, banco de dados ou APIs do site de papelaria durante o uso do Upscaler.
 
 ## 8. Licenças e créditos
 
 O projeto mantém a licença MIT e avisos da aplicação original. As fontes Arimo e Playfair Display são distribuídas sob SIL Open Font License 1.1, com os avisos em `src/img/`.
+
 
