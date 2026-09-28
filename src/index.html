@@ -17,7 +17,7 @@
     <meta property="og:type" content="website">
     <meta content="summary_large_image" name="twitter:card">
         <meta property="og:site_name" content="Esmeralda Paper">
-        <meta property="og:url" content="https://www.esmeraldapaper.com.br/upscalerstudio/">
+        <meta property="og:url" content="https://esmeraldapaper.com.br/upscalerstudio/">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="color-scheme" content="light dark">
     <meta name="theme-color" content="#fbfaf7">
@@ -65,16 +65,16 @@
                 <div class="grp-block"><div class="grp-title">Arquivo de origem</div><p class="hint">Escolha uma imagem ou vídeo MP4. O arquivo não é enviado a um servidor.</p><div class="privacy-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg><span>Seus arquivos ficam neste aparelho.</span></div></div>
             </section>
             <section class="pane" id="pane-aprimorar" data-pane="aprimorar" role="tabpanel" hidden>
-                <header class="pane-h"><h2>Ajustes</h2><p>Configure a ampliação por inteligência artificial.</p></header>
+                <header class="pane-h"><h2>Ajustes</h2><p>Ajuste a ampliação e a resolução de saída.</p></header>
                 <div class="grp-block"><fieldset id="settings" class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
-                    <legend class="sr-only">Tamanho do modelo de IA</legend>
+                    <legend class="sr-only">Perfil de processamento</legend>
                     <input type="radio" name="options" id="option1" value="small" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option1"><span class="network-name">Leve</span><span class="network-detail">Mais rápido</span></label>
                     <input type="radio" name="options" id="option2" value="medium" onclick="switchNetworkSize(this)" autocomplete="off" checked><label for="option2"><span class="network-name">Equilibrado</span><span class="network-detail">Recomendado</span></label>
                     <input type="radio" name="options" id="option3" value="large" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option3"><span class="network-name">Detalhado</span><span class="network-detail">Mais lento</span></label>
                 </fieldset></div>
                 <div class="grp-block"><fieldset class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
                     <div class="grp-title">Resolução final</div>
-                    <input type="radio" name="res" id="res2x" value="2x" onchange="window.switchTargetRes(this.value)" autocomplete="off" checked><label for="res2x"><span class="network-name">2× Original</span><span class="network-detail">Nativo da IA</span></label>
+                    <input type="radio" name="res" id="res2x" value="2x" onchange="window.switchTargetRes(this.value)" autocomplete="off" checked><label for="res2x"><span class="network-name">2× Original</span><span class="network-detail">Dobro das dimensões originais</span></label>
                     <input type="radio" name="res" id="res720" value="720" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res720"><span class="network-name">720p HD</span><span class="network-detail">1280×720</span></label>
                     <input type="radio" name="res" id="res1080" value="1080" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res1080"><span class="network-name">1080p</span><span class="network-detail">Full HD</span></label>
                     <input type="radio" name="res" id="res4k" value="2160" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res4k"><span class="network-name">4K</span><span class="network-detail">Ultra HD</span></label>
@@ -210,4 +210,6 @@
 </body>
 
 </html>
+
+
 
