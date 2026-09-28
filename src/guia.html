@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#fbfaf7">
-  <meta name="description" content="Guia do Upscaler Studio: imagens, vídeos, Firefox, modelos e exportação local.">
+  <meta name="description" content="Guia do Upscaler Studio para ampliar e exportar imagens e vídeos no navegador.">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; form-action 'none'; style-src 'self'; img-src 'self'; font-src 'self'; object-src 'none'">
   <meta name="referrer" content="no-referrer">
   <meta name="robots" content="noindex, nofollow">
@@ -15,11 +15,11 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="index.html" aria-label="Upscaler Studio">
+    <a class="brand" href="https://esmeraldapaper.com.br/upscalerstudio/" aria-label="Upscaler Studio">
       <img src="upscaler-studio.svg" alt="" width="34" height="34">
       <span><strong>Upscaler Studio</strong><small>Esmeralda Paper</small></span>
     </a>
-    <a class="open-app" href="index.html">Abrir o estúdio <span aria-hidden="true">→</span></a>
+    <a class="open-app" href="https://esmeraldapaper.com.br/upscalerstudio/">Abrir o estúdio <span aria-hidden="true">→</span></a>
   </header>
   <div class="guide-layout">
     <nav class="toc" aria-label="Seções do guia">
@@ -28,9 +28,9 @@
       <a href="#imagem">Aprimorar imagem</a>
       <a href="#video">Aprimorar vídeo</a>
       <a href="#resolucao">Resolução e tamanho</a>
-      <a href="#modelos">Modelos de IA</a>
-      <a href="#gpu">Como ativar a GPU</a>
-      <a href="#firefox">Firefox e compatibilidade</a>
+      <a href="#modelos">Perfis de processamento</a>
+      <a href="#gpu">Compatibilidade</a>
+      <a href="#firefox">Compatibilidade de vídeo</a>
       <a href="#aparencia">Menu e aparência</a>
       <a href="#privacidade">Privacidade e arquivos</a>
       <a href="#problemas">Perguntas frequentes</a>
@@ -38,18 +38,18 @@
     <main class="doc">
       <p class="kicker">GUIA DO USUÁRIO</p>
       <h1>Upscaler Studio</h1>
-      <p class="intro">Amplie imagens e vídeos em 2× com IA, compare antes e depois e exporte o resultado diretamente do navegador.</p>
+      <p class="intro">Amplie imagens e vídeos no navegador, compare o resultado e salve o arquivo no dispositivo.</p>
       <section id="inicio">
         <h2>Visão geral</h2>
-        <p>O processamento usa WebGPU e acontece no aparelho. O fluxo é: escolher um arquivo, ajustar a resolução de saída, selecionar o modelo de IA, comparar a prévia e baixar o resultado. Não é preciso criar uma conta nem fazer downloads externos.</p>
+        <p>A ferramenta processa a mídia no navegador usando WebGPU. Escolha um arquivo, ajuste a saída, compare a prévia e salve o resultado. Não é necessário criar uma conta.</p>
         <div class="note"><b>Arquivos aceitos</b><span>Imagens PNG, JPEG, WebP, AVIF, BMP e GIF. Vídeos MP4.</span></div>
       </section>
       <section id="imagem">
         <h2>Aprimorar imagem</h2>
         <ol>
           <li>Escolha uma imagem na tela inicial ou em <b>⋯ → Escolher imagem ou vídeo</b>.</li>
-          <li>Na aba <b>Aprimorar</b>, ajuste a Resolução final (1080p, 4K, etc.) ou mantenha a original da IA (2×).</li>
-          <li>Escolha a qualidade da IA (Leve, Equilibrado ou Detalhado).</li>
+          <li>Na aba <b>Aprimorar</b>, escolha a resolução final ou mantenha a opção 2×.</li>
+          <li>Selecione um perfil de processamento: Leve, Equilibrado ou Detalhado.</li>
           <li>Arraste o divisor da prévia, dê zoom com o mouse e segure para navegar pelos detalhes.</li>
           <li>Selecione <b>Baixar PNG</b> e salve a imagem ampliada.</li>
         </ol>
@@ -59,50 +59,41 @@
         <h2>Aprimorar vídeo</h2>
         <ol>
           <li>Escolha um arquivo MP4. A prévia exibe um quadro para comparação.</li>
-          <li>No painel lateral, em <b>Ajustes</b>, você pode definir uma <b>Resolução final</b> fixa para forçar um tamanho comercial (como 1080p) em vez do dobro livre.</li>
-          <li>Selecione o modelo da IA e inicie o processamento. O painel superior mostrará o andamento.</li>
+          <li>Em <b>Ajustes</b>, selecione a resolução final desejada ou mantenha a opção 2×.</li>
+          <li>Selecione um perfil e inicie o processamento. O painel superior mostra o andamento.</li>
           <li>Ao concluir, baixe o MP4. Em navegadores modernos, vídeos muito grandes podem ser salvos progressivamente direto no seu SSD.</li>
         </ol>
         <p>O vídeo exportado mantém o áudio original. O tamanho final depende da resolução escolhida e da complexidade da imagem original.</p>
       </section>
       <section id="resolucao">
         <h2>Resolução e tamanho</h2>
-        <p>O Upscaler Studio roda uma inteligência artificial que é matematicamente otimizada para aumentar vídeos e imagens multiplicando exatamente por dois (2×). Este modo nativo entrega a imagem mais realista, preservando todos os detalhes minúsculos gerados.</p>
-        <p>Entretanto, se o arquivo final for visualizado em redes sociais, você pode usar a opção <b>Resolução final</b> para fixar a gravação nos formatos 720p HD, 1080p Full HD, ou 4K Ultra HD. A imagem será gerada em 2× pela IA e depois ajustada com máxima qualidade e precisão de cores no processador para se adequar ao formato exigido.</p>
+        <p>A opção <b>2× Original</b> dobra a largura e a altura da mídia. O resultado depende do arquivo de origem e do perfil selecionado.</p>
+        <p>As opções 720p, 1080p e 4K definem a altura do arquivo de saída. A proporção original é mantida; o tamanho final também depende das dimensões do arquivo.</p>
       </section>
       <section id="modelos">
-        <h2>Modelos de IA</h2>
+        <h2>Perfis de processamento</h2>
         <dl>
-          <dt>Leve</dt><dd>Processamento rápido e menor demanda de memória. Ideal para quem tem placa gráfica (GPU) integrada.</dd>
-          <dt>Equilibrado</dt><dd>Opção recomendada. Equilibra a recriação fiel dos detalhes com uma velocidade muito boa.</dd>
-          <dt>Detalhado</dt><dd>Maior demanda de processamento da GPU; recria traços avançados de vídeos gravados com bastante perda.</dd>
+          <dt>Leve</dt><dd>Processamento rápido e menor demanda de memória. Pode reduzir o tempo de processamento em dispositivos com recursos limitados.</dd>
+          <dt>Equilibrado</dt><dd>Equilibra tempo de processamento e uso de recursos.</dd>
+          <dt>Detalhado</dt><dd>Pode levar mais tempo e exigir mais memória da GPU.</dd>
         </dl>
       </section>
       <section id="gpu">
-        <h2>Como ativar a GPU (WebGPU) em diversos computadores</h2>
-        <p>A WebGPU é a tecnologia vital deste estúdio, permitindo que o navegador controle sua placa gráfica para tarefas de IA com extrema velocidade.</p>
+        <h2>Compatibilidade</h2>
+        <p>A ampliação exige WebGPU e uma GPU compatível. A disponibilidade depende do navegador, do sistema e do driver gráfico.</p>
         <dl>
-          <dt>Chrome, Edge e Brave (Baseados em Chromium)</dt>
-          <dd>Geralmente, já vem habilitado por padrão em 2024+. Verifique se a <strong>Aceleração de hardware</strong> está ativa nas configurações principais do navegador. Se mesmo assim der erro:
-          1. Na barra de endereços, acesse <code>chrome://flags</code> (ou <code>edge://flags</code>).<br>
-          2. Busque por "Unsafe WebGPU" e mude a chave correspondente para <strong>Enabled</strong>.<br>
-          3. Reinicie o navegador pelo botão lateral que aparecerá na tela.</dd>
-
-          <dt>No Mozilla Firefox</dt>
-          <dd>A WebGPU não vem ativada em todas as versões no momento. Siga:
-          1. Acesse <code>about:config</code> na barra de endereços e aceite o risco.<br>
-          2. Busque por <code>dom.webgpu.enabled</code> e clique duas vezes para deixar em <strong>true</strong>.<br>
-          3. Busque por <code>gfx.webrender.all</code> e também mude para <strong>true</strong>.<br>
-          4. Reinicie o Firefox.</dd>
-
-          <dt>Computadores MacOS ou Linux</dt>
-          <dd>Em sistemas Apple Silicon (M1/M2/M3), a WebGPU comanda os núcleos de IA nativamente. Em Linux, verifique as mesmas configurações do Chrome acima e certifique-se de usar drivers recentes para Nvidia ou AMD.</dd>
+          <dt>Chrome, Edge e navegadores baseados em Chromium</dt>
+          <dd>Use uma versão atualizada e confira se a aceleração de hardware está habilitada. Evite alterar opções experimentais do navegador.</dd>
+          <dt>Firefox</dt>
+          <dd>O suporte varia conforme a versão e o sistema. Se WebGPU não estiver disponível, atualize o navegador ou tente uma versão atual do Chrome ou Edge.</dd>
+          <dt>macOS e Linux</dt>
+          <dd>A compatibilidade depende do navegador, da GPU e dos drivers instalados.</dd>
         </dl>
       </section>
       <section id="firefox">
-        <h2>Firefox e compatibilidade de vídeo</h2>
-        <p>O processamento de imagens funciona via WebGPU em qualquer aba. Contudo, vídeos MP4 exigem o uso da infraestrutura <strong>WebCodecs</strong>.</p>
-        <p>Esse decodificador de vídeo ainda está em adaptação no Firefox em alguns cenários. O Chrome/Edge são sempre as alternativas definitivas, recomendadas e seguras caso um projeto MP4 pare de gravar sem motivo aparente ou falte espaço temporário no computador (o Chrome libera gravações diretas via HD).</p>
+        <h2>Compatibilidade de vídeo</h2>
+        <p>Além de WebGPU, o processamento de vídeo requer suporte a <strong>WebCodecs</strong>. A disponibilidade varia entre navegadores e sistemas.</p>
+        <p>Se um MP4 não abrir ou não puder ser exportado, tente outro arquivo ou um navegador atualizado com suporte a WebCodecs.</p>
       </section>
       <section id="aparencia">
         <h2>Menu e aparência</h2>
@@ -116,16 +107,16 @@
       </section>
       <section id="privacidade">
         <h2>Privacidade e arquivos</h2>
-        <p>Sua privacidade é irrestrita: o arquivo selecionado <b>não é enviado a nenhum servidor da Esmeralda Paper</b>, CDN ou provedor em nuvem. Modelos de IA, tipografia e o demuxer WebAssembly ficam embutidos no app. A gravação e o upscale ocorrem apenas neste aparelho.</p>
+        <p>Os arquivos selecionados são processados na memória do navegador e não são enviados pelo aplicativo. Na primeira visita, o navegador baixa os arquivos necessários para abrir o app. Preferências de aparência podem ser salvas neste navegador.</p>
         <p>O projeto deriva do Free AI Video Upscaler e usa o motor WebSR. A licença MIT permite uso, modificação e redistribuição. Consulte o <a href="LICENSE">LICENSE</a>.</p>
       </section>
       <section id="problemas">
         <h2>Perguntas frequentes e erros</h2>
         <dl>
-          <dt>Erro: WebGPU não está disponível</dt><dd>Siga o guia rápido acima na seção "Como ativar a GPU". Lembre-se também de baixar o driver oficial de vídeo pelo site da sua placa gráfica (GeForce, Radeon, Intel) e não usar drivers genéricos do Windows.</dd>
-          <dt>O vídeo carrega infinitamente e não exibe as estatísticas</dt><dd>Isso aponta um erro de compatibilidade de codec MP4 interno, onde o formato do áudio é recusado pelo seu aparelho (exemplo: AAC em vez de AC3) ou a API falhou. Tente converter ou use Chrome.</dd>
+          <dt>WebGPU não está disponível</dt><dd>Atualize o navegador e verifique se a aceleração de hardware está ativa. A compatibilidade também depende da GPU e dos drivers.</dd>
+          <dt>O vídeo carrega infinitamente e não exibe as estatísticas</dt><dd>O arquivo ou o codec pode não ser compatível com o navegador. Tente outro MP4 ou um navegador atualizado com WebCodecs.</dd>
           <dt>A barra não aceita arrastar ou o zoom trava no topo</dt><dd>Use Ctrl (ou Alt) + roda do mouse sobre a prévia, os botões da barra sob a comparação, ou arraste com zoom ampliado. A barra de zoom fica abaixo da prévia e não cobre o progresso.</dd>
-          <dt>A exportação avisa falta de memória no navegador</dt><dd>Navegadores como o Chrome possuem limite artificial para o tamanho que um arquivo pode chegar dentro da RAM. Para vídeos gigantes de longa duração, mude para o Chrome: ele pedirá autorização para gravar direto no SSD com a API `File System Access` e pulará esse limite imposto na RAM.</dd>
+          <dt>A exportação avisa falta de memória no navegador</dt><dd>Arquivos grandes podem exceder a memória disponível. Tente reduzir a duração ou a resolução e feche outras abas antes de processar novamente.</dd>
         </dl>
       </section>
       <footer><a href="https://www.esmeraldapaper.com.br/ferramentas/" target="_blank" rel="noopener noreferrer">Mais ferramentas</a><a href="https://www.esmeraldapaper.com.br/politica-de-privacidade/#ferramentas-gratuitas" target="_blank" rel="noopener noreferrer">Política de privacidade</a><a href="https://www.esmeraldapaper.com.br/avaliar-ferramentas/?tool=upscaler" target="_blank" rel="noopener noreferrer">Avaliar</a><a href="https://github.com/avelinocarloscorrea/upscaler-studio" target="_blank" rel="noopener noreferrer">Código-fonte</a></footer>
@@ -133,3 +124,8 @@
   </div>
 </body>
 </html>
+
+
+
+
+
