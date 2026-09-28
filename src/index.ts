@@ -50,7 +50,7 @@ let content: ContentType = 'rl';
 let download_name: string;
 let inputFile: File;
 
-// AI model weights for different network sizes and content types
+// Model weights grouped by processing profile and content type
 type WeightsMap = {
     [K in NetworkSize]: {
         [C in ContentType]: any;
