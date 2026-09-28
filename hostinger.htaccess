@@ -1,5 +1,13 @@
 Options -Indexes
 
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} ^upscalerstudio\.esmeraldapaper\.com\.br$ [NC]
+    RewriteRule ^$ https://www.esmeraldapaper.com.br/upscalerstudio/ [R=301,L]
+    RewriteCond %{HTTP_HOST} ^upscalerstudio\.esmeraldapaper\.com\.br$ [NC]
+    RewriteRule ^(.+)$ https://www.esmeraldapaper.com.br/upscalerstudio/$1 [R=301,L]
+</IfModule>
+
 <IfModule mod_headers.c>
     <Files "index.html">
         Header always set Cache-Control "no-cache, no-store, must-revalidate"
@@ -7,4 +15,3 @@ Options -Indexes
         Header always set Expires "0"
     </Files>
 </IfModule>
-
