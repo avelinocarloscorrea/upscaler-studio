@@ -31,3 +31,4 @@ Este projeto é baseado no [Free AI Video Upscaler](https://github.com/sb2702/fr
 
 As fontes Arimo e Playfair Display estão sob SIL Open Font License 1.1; os avisos estão em `src/img/LICENSE-arimo.txt` e `src/img/LICENSE-playfair-display.txt`.
 
+
