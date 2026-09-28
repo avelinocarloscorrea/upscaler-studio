@@ -181,6 +181,23 @@ async function exportUpscaledImage(targetResolution?: string): Promise<Blob> {
 
 // Processing functions moved to processors/
 
+/** Preserve useful details when a browser or GPU API rejects with a non-Error value. */
+function describeWorkerError(error: unknown): string {
+  if (error instanceof Error) return error.message || error.name;
+  if (typeof error === 'string' && error.trim()) return error;
+  if (error && typeof error === 'object') {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string' && message.trim()) return message;
+    try {
+      const details = JSON.stringify(error);
+      if (details && details !== '{}') return details;
+    } catch {
+      // Fall through to a readable string representation.
+    }
+  }
+  return error == null ? 'O processamento falhou sem detalhes.' : `O processamento falhou: ${String(error)}`;
+}
+
 /**
  * Worker message handler with type-safe message routing
  */
@@ -243,7 +260,7 @@ self.onmessage = async function (event: MessageEvent<WorkerRequestMessage>) {
   } catch (error) {
     postMessage({
       cmd: 'error',
-      data: error instanceof Error ? error.message : 'O processamento falhou.',
+      data: describeWorkerError(error),
     } satisfies WorkerResponseMessage);
   }
 };
