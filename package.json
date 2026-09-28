@@ -2,7 +2,6 @@
   "name": "upscaler-studio",
   "version": "0.1.0",
   "description": "Ampliação local de imagens e vídeos no navegador",
-  "main": "src/main.js",
   "scripts": {
     "build": "webpack --mode production",
     "serve": "webpack serve",
@@ -53,4 +52,8 @@
     "node": ">=22.15.0"
   }
 }
+
+
+
+
 
