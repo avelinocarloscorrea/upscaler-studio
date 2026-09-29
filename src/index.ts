@@ -149,6 +149,7 @@ async function index(): Promise<void> {
     Alpine.store('outHeight', 0);
     Alpine.store('networkStatus', 'Prévia pronta');
     Alpine.store('previewModel', networks[size].name);
+    Alpine.store('previewProfile', size === 'small' ? 'Leve' : size === 'medium' ? 'Equilibrado' : 'Detalhado');
     Alpine.store('previewStyle', 'Fotografia');
     Alpine.store('previewOutput', '');
     Alpine.store('assessment', null);
@@ -202,8 +203,7 @@ async function index(): Promise<void> {
     };
     app.addEventListener('transitionend', (event) => {
         if (event.target === app && event.propertyName === 'grid-template-columns') {
-            fitZoom = computeFitZoom();
-            if (zoom <= fitZoom * 1.01) zoomFit();
+            if (fitZoomSelected) zoomFit();
             else setComparePosition(Number((document.getElementById('compare-slider') as HTMLInputElement | null)?.value ?? 50));
         }
     });
@@ -291,6 +291,16 @@ async function index(): Promise<void> {
     const compareSlider = document.getElementById('compare-slider') as HTMLInputElement;
     compareSlider.addEventListener('input', () => setComparePosition(Number(compareSlider.value)));
     setComparePosition(Number(compareSlider.value));
+    previewResizeObserver?.disconnect();
+    previewResizeObserver = new ResizeObserver(() => {
+        if (Alpine.store('state') === 'preview' && fitZoomSelected) {
+            requestAnimationFrame(() => {
+                if (Alpine.store('state') === 'preview' && fitZoomSelected) zoomFit();
+            });
+        }
+    });
+    const previewStage = document.getElementById('preview-stage');
+    if (previewStage) previewResizeObserver.observe(previewStage);
     document.addEventListener('fullscreenchange', () => requestAnimationFrame(fitComparison));
 
     worker.postMessage({ cmd: 'isSupported' } satisfies WorkerRequestMessage);
@@ -322,6 +332,7 @@ async function index(): Promise<void> {
         if (input.value !== size) {
             size = input.value as NetworkSize;
             Alpine.store('previewModel', networks[size].name);
+            Alpine.store('previewProfile', size === 'small' ? 'Leve' : size === 'medium' ? 'Equilibrado' : 'Detalhado');
             await updateNetwork();
         }
     };
@@ -454,6 +465,7 @@ function resetPreviewCanvas(): void {
     setComparePosition(50);
     zoom = 1;
     fitZoom = 1;
+    fitZoomSelected = true;
     document.getElementById('app')?.classList.remove('zoomed-preview');
     const zval = document.getElementById('zval');
     if (zval) zval.textContent = '100%';
@@ -913,6 +925,7 @@ async function updateNetwork(): Promise<void> {
     const contentLabel = selectedContent === 'rl' ? 'Fotografia' : selectedContent === 'an' ? 'Ilustração' : 'Render 3D';
     const sizeLabel = selectedSize === 'small' ? 'Leve' : selectedSize === 'medium' ? 'Equilibrado' : 'Detalhado';
     Alpine.store('previewModel', networks[selectedSize].name);
+    Alpine.store('previewProfile', sizeLabel);
     Alpine.store('previewStyle', contentLabel);
     Alpine.store('networkStatus', `Aplicando ${sizeLabel} · ${contentLabel}…`);
     try {
@@ -1144,6 +1157,8 @@ async function showFilePicker(): Promise<FileSystemFileHandle> {
 // ==================== Zoom and Pan ====================
 let zoom = 1.0;
 let fitZoom = 1.0;
+let fitZoomSelected = true;
+let previewResizeObserver: ResizeObserver | null = null;
 
 function computeFitZoom() {
     if (!mediaWidth || !mediaHeight) return 1.0;
@@ -1162,6 +1177,7 @@ function computeFitZoom() {
 
 function applyZoom(z: number) {
     if (!mediaWidth || !mediaHeight) return;
+    fitZoomSelected = false;
     const next = Math.max(0.05, Math.min(z, 8));
     zoom = next;
     const outer = document.getElementById('image-compare-outer');
@@ -1196,6 +1212,7 @@ function zoomOut() { zoomBy(1 / 1.25); }
 function zoomFit() {
     fitZoom = computeFitZoom();
     applyZoom(fitZoom);
+    fitZoomSelected = true;
 }
 function zoom1x() { applyZoom(1); }
 function zoomTo(clientX: number, clientY: number, factor: number): void {
