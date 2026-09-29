@@ -659,3 +659,6 @@ body.dropping #stage {
     .settings-panel .grp-block { padding-top: 4px; }
     .analysis-card, .metadata-card { margin: 9px 0; }
 }
+
+#upscaled-resolution-preview[src] { position: absolute; z-index: 1; inset: 0; display: block; width: 100%; height: 100%; object-fit: fill; }
+#compare-after canvas { z-index: 0; }
