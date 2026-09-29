@@ -133,48 +133,7 @@
             <p class="analysis-note" x-text="$store.metadata?.cleaning"></p>
         </details>
             </section>
-            <section class="pane" id="pane-aprimorar" data-pane="aprimorar" role="tabpanel" hidden>
-                <header class="pane-h"><h2>Ajustes</h2><p>Ajuste a ampliação e a resolução de saída.</p></header>
-                <div class="settings-tabs" role="tablist" aria-label="Categorias de ajustes"><button type="button" role="tab" class="on" aria-selected="true" data-settings-tab data-settings-tab-panel="settings-panel-profile">Perfil</button><button type="button" role="tab" class="" aria-selected="false" data-settings-tab data-settings-tab-panel="settings-panel-content">Tipo de imagem</button><button type="button" role="tab" class="" aria-selected="false" data-settings-tab data-settings-tab-panel="settings-panel-resolution">Resolução</button></div>
-                <section class="settings-panel" id="settings-panel-profile" role="tabpanel"><div class="grp-block"><fieldset id="settings" class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
-                    <legend class="sr-only">Perfil de processamento</legend>
-                    <input type="radio" name="options" id="option1" value="small" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option1"><span class="network-name">Leve</span><span class="network-detail">Mais rápido</span></label>
-                    <input type="radio" name="options" id="option2" value="medium" onclick="switchNetworkSize(this)" autocomplete="off" checked><label for="option2"><span class="network-name">Equilibrado</span><span class="network-detail">Recomendado</span></label>
-                    <input type="radio" name="options" id="option3" value="large" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option3"><span class="network-name">Detalhado</span><span class="network-detail">Mais lento</span></label>
-                </fieldset></div></section>
-<section class="settings-panel" id="settings-panel-content" role="tabpanel" hidden><div class="grp-block"><fieldset class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
-                    <div class="grp-title">Tipo de imagem</div>
-                    <input type="radio" name="content" id="content-photo" value="rl" onchange="switchNetworkStyle(this)" autocomplete="off" checked><label for="content-photo"><span class="network-name">Fotografia</span><span class="network-detail">Pessoas, produtos e paisagens</span></label>
-                    <input type="radio" name="content" id="content-art" value="an" onchange="switchNetworkStyle(this)" autocomplete="off"><label for="content-art"><span class="network-name">Ilustração</span><span class="network-detail">Anime e arte 2D</span></label>
-                    <input type="radio" name="content" id="content-3d" value="3d" onchange="switchNetworkStyle(this)" autocomplete="off"><label for="content-3d"><span class="network-name">Render 3D</span><span class="network-detail">CGI e gráficos</span></label>
-                </fieldset></div></section>
-<section class="settings-panel" id="settings-panel-resolution" role="tabpanel" hidden><div class="grp-block"><fieldset class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
-                    <div class="grp-title">Resolução final</div>
-                    <input type="radio" name="res" id="res2x" value="2x" onchange="window.switchTargetRes(this.value)" autocomplete="off" checked><label for="res2x"><span class="network-name">2× Original</span><span class="network-detail">Dobro das dimensões originais</span></label>
-                    <input type="radio" name="res" id="res720" value="720" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res720"><span class="network-name">720p HD</span><span class="network-detail">1280×720</span></label>
-                    <input type="radio" name="res" id="res1080" value="1080" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res1080"><span class="network-name">1080p</span><span class="network-detail">Full HD</span></label>
-                    <input type="radio" name="res" id="res4k" value="2160" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res4k"><span class="network-name">4K</span><span class="network-detail">Ultra HD</span></label>
-                </fieldset></div></section>
-                <div class="grp-block"><fieldset id="settings" class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
-                    <legend class="sr-only">Perfil de processamento</legend>
-                    <input type="radio" name="options" id="option1" value="small" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option1"><span class="network-name">Leve</span><span class="network-detail">Mais rápido</span></label>
-                    <input type="radio" name="options" id="option2" value="medium" onclick="switchNetworkSize(this)" autocomplete="off" checked><label for="option2"><span class="network-name">Equilibrado</span><span class="network-detail">Recomendado</span></label>
-                    <input type="radio" name="options" id="option3" value="large" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option3"><span class="network-name">Detalhado</span><span class="network-detail">Mais lento</span></label>
-                </fieldset></div>
-                <div class="grp-block"><fieldset class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
-                    <div class="grp-title">Tipo de imagem</div>
-                    <input type="radio" name="content" id="content-photo" value="rl" onchange="switchNetworkStyle(this)" autocomplete="off" checked><label for="content-photo"><span class="network-name">Fotografia</span><span class="network-detail">Pessoas, produtos e paisagens</span></label>
-                    <input type="radio" name="content" id="content-art" value="an" onchange="switchNetworkStyle(this)" autocomplete="off"><label for="content-art"><span class="network-name">Ilustração</span><span class="network-detail">Anime e arte 2D</span></label>
-                    <input type="radio" name="content" id="content-3d" value="3d" onchange="switchNetworkStyle(this)" autocomplete="off"><label for="content-3d"><span class="network-name">Render 3D</span><span class="network-detail">CGI e gráficos</span></label>
-                </fieldset></div>
-                <div class="grp-block"><fieldset class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
-                    <div class="grp-title">Resolução final</div>
-                    <input type="radio" name="res" id="res2x" value="2x" onchange="window.switchTargetRes(this.value)" autocomplete="off" checked><label for="res2x"><span class="network-name">2× Original</span><span class="network-detail">Dobro das dimensões originais</span></label>
-                    <input type="radio" name="res" id="res720" value="720" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res720"><span class="network-name">720p HD</span><span class="network-detail">1280×720</span></label>
-                    <input type="radio" name="res" id="res1080" value="1080" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res1080"><span class="network-name">1080p</span><span class="network-detail">Full HD</span></label>
-                    <input type="radio" name="res" id="res4k" value="2160" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res4k"><span class="network-name">4K</span><span class="network-detail">Ultra HD</span></label>
-                </fieldset></div>
-            </section>
+            
         </div>
     </aside>
 
