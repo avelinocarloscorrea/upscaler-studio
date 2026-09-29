@@ -921,6 +921,7 @@ async function updateNetwork(): Promise<void> {
             bitmap.close();
             return;
         }
+        if (mediaKind === 'video') Alpine.store('assessment', assessBitmap(bitmap));
         worker.postMessage({
             cmd: 'network',
             data: {
