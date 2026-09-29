@@ -258,6 +258,12 @@ self.onmessage = async function (event: MessageEvent<WorkerRequestMessage>) {
       break;
     }
 
+    case 'preview-image': {
+      const blob = await exportUpscaledImage(event.data.targetResolution);
+      postMessage({ cmd: 'preview-image', data: { requestId: event.data.requestId, blob } } satisfies WorkerResponseMessage);
+      break;
+    }
+
       case 'network':
         await switchNetwork(
           event.data.data.name,
