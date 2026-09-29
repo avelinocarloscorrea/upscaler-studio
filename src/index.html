@@ -22,6 +22,18 @@
     <meta name="color-scheme" content="light dark">
     <meta name="theme-color" content="#fbfaf7">
     <meta name="referrer" content="no-referrer">
+    <style>
+        html, body { min-height: 100%; margin: 0; background: #1d2023; color: #f5f2e8; font-family: Inter, system-ui, sans-serif; }
+        #app-boot { position: fixed; inset: 0; z-index: 9999; display: grid; place-content: center; gap: 14px; padding: 24px; background: radial-gradient(ellipse at 50% 20%, #343a38, #1d2023 68%); color: #eee; text-align: center; transition: opacity .28s ease, visibility 0s linear .28s; }
+        #app-boot.is-ready { opacity: 0; visibility: hidden; pointer-events: none; }
+        #app-boot .boot-mark { width: 46px; height: 46px; margin: 0 auto; border: 1px solid #8ebca9; border-radius: 14px; background: linear-gradient(135deg,#8ebca9,#476b5e); box-shadow: 0 8px 30px #0005; }
+        #app-boot strong { font-size: 16px; font-weight: 600; }
+        #app-boot span { color: #b8c0bd; font-size: 12px; }
+        #app-boot i { width: min(240px,60vw); height: 3px; overflow: hidden; border-radius: 9px; background: #ffffff20; }
+        #app-boot i::after { content: ""; display: block; width: 40%; height: 100%; border-radius: inherit; background: #8ebca9; animation: boot-loading 1.2s ease-in-out infinite alternate; }
+        @keyframes boot-loading { to { transform: translateX(150%); } }
+        @media (prefers-reduced-motion: reduce) { #app-boot i::after { animation: none; width: 100%; } }
+    </style>
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self' blob:; img-src 'self' blob: data:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; manifest-src 'self'">
         <link rel="icon" href="upscaler-studio.svg">
     <title>Upscaler Studio</title>
@@ -32,6 +44,7 @@
 
 
 <body x-data="{}">
+<div id="app-boot" role="status" aria-live="polite"><span class="boot-mark" aria-hidden="true"></span><strong>Upscaler Studio</strong><span>Preparando seu espaço de trabalho…</span><i aria-hidden="true"></i></div>
 <div id="app">
     <header id="bar">
         <a class="brand" id="brandLink" rel="noopener noreferrer" title="Mais ferramentas Esmeralda Paper" aria-label="Mais ferramentas Esmeralda Paper">
@@ -148,9 +161,6 @@
                 </button>
             </div>
             </div>
-            <div id="preview" class="preview-caption" x-show="$store.state === 'preview'">
-                <span class="eyebrow" x-text="$store.mediaKind === 'image' ? 'Prévia da imagem' : 'Prévia do vídeo'"></span><p><strong x-text="$store.filename"></strong><span> será ampliado para </span><strong><span x-text="$store.outWidth"></span> × <span x-text="$store.outHeight"></span> px</strong><span x-show="$store.mediaKind === 'video'"> · arquivo estimado em </span><strong x-text="$store.size"></strong><span x-show="$store.imageResized"> · imagem redimensionada com qualidade alta para caber no processamento; a saída usa a versão redimensionada.</span></p>
-            </div>
             <div id="info" class="process-info" x-show="$store.state === 'processing' || $store.state === 'paused'">
                 <div class="process-copy"><div><span class="eyebrow" x-text="$store.state === 'paused' ? 'Processamento pausado' : 'Aprimorando vídeo'"></span><p><strong x-text="$store.filename"></strong><span> · tempo restante </span><strong x-text="$store.eta"></strong></p></div><span class="progress-value" x-text="Math.round($store.progress) + '%' "></span></div>
                 <div class="progress-track" id="progress"><div class="progress-fill" role="progressbar" x-bind:style="{width: $store.progress + '%'}" x-bind:aria-valuenow="$store.progress" aria-valuemin="0" aria-valuemax="100"></div></div>
@@ -168,10 +178,13 @@
         <header class="aside-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-2-5.8L4 11l6-2.2L12 3Z"/><path d="m19 14 1 2.5 2.5 1-2.5 1L19 21l-1-2.5-2.5-1 2.5-1 1-2.5Z"/></svg>Aprimoramento</header>
         <div class="inspector-section file-summary" x-show="$store.state === 'preview' || $store.state === 'processing' || $store.state === 'paused' || $store.state === 'complete'">
             <div class="grp-title">Saída prevista</div>
+            <div class="summary-row file-summary-name"><span>Arquivo</span><strong x-text="$store.filename" x-bind:title="$store.filename"></strong></div>
+            <div class="summary-row"><span>Ampliação</span><strong><span x-text="$store.outWidth"></span> × <span x-text="$store.outHeight"></span> px</strong></div>
             <div class="summary-row"><span>Resolução</span><strong><span x-text="$store.outWidth"></span> × <span x-text="$store.outHeight"></span></strong></div>
             <div class="summary-row"><span>Tamanho estimado</span><strong x-text="$store.size"></strong></div>
             <div class="summary-row"><span>Formato</span><strong x-text="$store.mediaKind === 'image' ? 'PNG' : 'MP4'"></strong></div>
             <div class="summary-row" x-show="$store.mediaKind === 'image'"><span>Impressão</span><strong><span x-text="$store.imageDpi"></span> PPI · <span x-text="$store.printSize"></span></strong></div>
+            <p class="summary-note" x-show="$store.imageResized">Imagem redimensionada com qualidade alta para caber no processamento; a saída usa a versão preparada.</p>
         </div>
         <div class="print-settings" x-show="$store.mediaKind === 'image' && $store.state === 'preview'">
             <label for="image-dpi">Preparação automática para impressão</label>
