@@ -15,3 +15,11 @@ Options -Indexes
         Header always set Expires "0"
     </Files>
 </IfModule>
+
+# web-demuxer runs its WebAssembly module inside a nested worker.
+# Allow that public static asset to load from the app's blob worker context.
+<IfModule mod_headers.c>
+    <Files "web-demuxer.wasm">
+        Header always set Access-Control-Allow-Origin "*"
+    </Files>
+</IfModule>
