@@ -45,7 +45,7 @@
 
 <body x-data="{}">
 <div id="app-boot" role="status" aria-live="polite"><span class="boot-mark" aria-hidden="true"></span><strong>Upscaler Studio</strong><span>Preparando seu espaço de trabalho…</span><i aria-hidden="true"></i></div>
-<div id="app" x-bind:class="{ 'export-complete': $store.state === 'complete' }">
+<div id="app">
     <header id="bar">
         <a class="brand" id="brandLink" rel="noopener noreferrer" title="Mais ferramentas Esmeralda Paper" aria-label="Mais ferramentas Esmeralda Paper">
             <span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="17" fill="var(--brand)"/><rect x="12" y="15" width="40" height="34" rx="6" fill="none" stroke="var(--surface)" stroke-opacity=".9" stroke-width="2"/><circle cx="22" cy="25" r="3" fill="var(--gold)"/><path d="m16 44 11-12 8 8 6-6 8 10H16Z" fill="var(--surface)" fill-opacity=".93"/><path d="m31 32 13-13m-8 0h8v8" fill="none" stroke="var(--gold)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.8"/></svg></span>
@@ -203,7 +203,7 @@
             </div>
             <div id="download-link" class="complete-panel" x-show="$store.state === 'complete'">
                 <span class="state-icon success-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span><div class="complete-copy"><p class="eyebrow">Upscale concluído</p><h2>Sua mídia está pronta</h2><p x-show="$store.target === 'writer'">Salva como <strong class="inline-code" x-text="$store.download_name"></strong></p><p class="support-note">O processamento aconteceu no seu navegador. Nenhum arquivo saiu deste aparelho.</p></div>
-                <a x-bind:href="$store.download_url" x-bind:download="$store.download_name" x-show="$store.target === 'blob'" class="primary download-button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v3h16v-3"/></svg>Baixar arquivo</a>
+                
                 <button type="button" class="secondary another-button" onclick="location.reload()">Escolher outro arquivo</button>
             </div>
         </section>
@@ -222,6 +222,9 @@
             <div class="summary-row"><span>Formato</span><strong x-text="$store.mediaKind === 'image' ? 'PNG' : 'MP4'"></strong></div>
             <div class="summary-row" x-show="$store.mediaKind === 'image'"><span>Impressão</span><strong><span x-text="$store.imageDpi"></span> PPI · <span x-text="$store.printSize"></span></strong></div>
             <p class="summary-note" x-show="$store.imageResized">Imagem redimensionada com qualidade alta para caber no processamento; a saída usa a versão preparada.</p>
+        </div>
+        <div class="inspector-actions complete-download-actions" x-show="$store.state === 'complete'">
+            <a x-bind:href="$store.download_url" x-bind:download="$store.download_name" x-show="$store.target === 'blob'" class="primary action-button download-button complete-download-button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v3h16v-3"/></svg>Baixar arquivo</a>
         </div>
         <div class="print-settings" x-show="$store.mediaKind === 'image' && $store.state === 'preview'">
             <label for="image-dpi">Preparação automática para impressão</label>
