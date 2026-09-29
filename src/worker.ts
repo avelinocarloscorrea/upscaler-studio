@@ -109,7 +109,14 @@ async function switchNetwork(name: string, weights: any, bitmap: ImageBitmap): P
   currentBitmap = bitmap;
   websr.switchNetwork(name as any, weights);
 
+  // Keep the original and enhanced layers on the exact same selected video frame.
+  const originalFrame = await createImageBitmap(bitmap, {
+    resizeHeight: resolution.height * 2,
+    resizeWidth: resolution.width * 2,
+  });
   await websr.render(bitmap as any);
+  if (ctx) ctx.transferFromImageBitmap(originalFrame);
+  else originalFrame.close();
 }
 
 async function exportUpscaledImage(targetResolution?: string): Promise<Blob> {
