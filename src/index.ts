@@ -131,6 +131,7 @@ function bindMediaPicker(): void {
 async function index(): Promise<void> {
     Alpine.store('state', 'init');
     Alpine.store('mediaKind', 'video');
+    Alpine.store('imageResized', false);
     Alpine.store('outWidth', 0);
     Alpine.store('outHeight', 0);
 
@@ -364,6 +365,7 @@ async function loadMedia(file: File): Promise<void> {
     }
 
     mediaKind = 'video';
+    Alpine.store('imageResized', false);
     resetWorkerReady();
     resetPreviewCanvas();
     inputFile = file;
@@ -417,15 +419,27 @@ function fitComparison(): void {
 
 async function setupImage(file: File): Promise<void> {
     try {
-        const bitmap = await createImageBitmap(file);
+        let bitmap = await createImageBitmap(file);
+        let wasResized = false;
+        const originalWidth = bitmap.width;
+        const originalHeight = bitmap.height;
+        if (originalWidth > 4096 || originalHeight > 4096) {
+            const scale = 4096 / Math.max(originalWidth, originalHeight);
+            const resizedWidth = Math.max(1, Math.round(originalWidth * scale));
+            const resizedHeight = Math.max(1, Math.round(originalHeight * scale));
+            const resizedBitmap = await createImageBitmap(bitmap, {
+                resizeWidth: resizedWidth,
+                resizeHeight: resizedHeight,
+                resizeQuality: 'high',
+            });
+            bitmap.close();
+            bitmap = resizedBitmap;
+            wasResized = true;
+        }
         const width = bitmap.width;
         const height = bitmap.height;
-        if (width > 4096 || height > 4096) {
-            bitmap.close();
-            showError('A imagem precisa ter até 4096 px em cada lado para o upscale 2×.');
-            return;
-        }
 
+        Alpine.store('imageResized', wasResized);
         mediaWidth = width;
         mediaHeight = height;
         Alpine.store('width', width);
