@@ -269,19 +269,22 @@ self.onmessage = async function (event: MessageEvent<WorkerRequestMessage>) {
     }
 
     case 'preview-image': {
-      const blob = await enqueueRender(() => exportUpscaledImage(event.data.targetResolution));
-      postMessage({ cmd: 'preview-image', data: { requestId: event.data.requestId, blob } } satisfies WorkerResponseMessage);
+      const request = event.data;
+      const blob = await enqueueRender(() => exportUpscaledImage(request.targetResolution));
+      postMessage({ cmd: 'preview-image', data: { requestId: request.requestId, blob } } satisfies WorkerResponseMessage);
       break;
     }
 
-      case 'network':
-        await enqueueRender(() => switchNetwork(
-          event.data.data.name,
-          event.data.data.weights,
-          event.data.data.bitmap
-        ));
-        postMessage({ cmd: 'network-ready', data: event.data.data.requestId } satisfies WorkerResponseMessage);
-        break;
+    case 'network': {
+      const request = event.data.data;
+      await enqueueRender(() => switchNetwork(
+        request.name,
+        request.weights,
+        request.bitmap
+      ));
+      postMessage({ cmd: 'network-ready', data: request.requestId } satisfies WorkerResponseMessage);
+      break;
+    }
     }
   } catch (error) {
     postMessage({
