@@ -15,6 +15,7 @@ export type WorkerRequestMessage =
   | { cmd: 'network'; data: NetworkData }
   | { cmd: 'process'; inputFile: File; outputHandle?: FileSystemFileHandle; targetResolution?: string }
   | { cmd: 'export-image'; targetResolution?: string }
+  | { cmd: 'preview-image'; targetResolution?: string; requestId: number }
   | { cmd: 'pause' }
   | { cmd: 'resume' };
 
@@ -43,6 +44,7 @@ export type WorkerResponseMessage =
   | { cmd: 'error'; data: string }
   | { cmd: 'finished'; data: Blob | null }
   | { cmd: 'image-finished'; data: Blob }
+  | { cmd: 'preview-image'; data: { requestId: number; blob: Blob } }
   | { cmd: 'ready' }
   | { cmd: 'network-ready'; data: number }
   | { cmd: 'paused' }
