@@ -263,16 +263,6 @@ async function index(): Promise<void> {
         button.addEventListener('click', () => button.closest('dialog')?.close());
     });
 
-    const settingTabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-settings-tab]'));
-    settingTabs.forEach((tab) => tab.addEventListener('click', () => {
-        settingTabs.forEach((item) => {
-            const selected = item === tab;
-            item.classList.toggle('on', selected);
-            item.setAttribute('aria-selected', String(selected));
-            document.getElementById(item.dataset.settingsTabPanel || '')?.toggleAttribute('hidden', !selected);
-        });
-    }));
-
     const rail = document.getElementById('rail');
     rail?.addEventListener('click', (event) => {
         const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-pane]');
@@ -840,7 +830,7 @@ worker.onmessage = function (event: MessageEvent<WorkerResponseMessage>) {
     } else if (event.data.cmd === 'network-ready') {
         if (event.data.data === activeNetworkUpdate) {
             Alpine.store('networkStatus', 'Modelo aplicado à prévia');
-            if (targetResolution !== '2x') requestOutputResolutionPreview();
+            requestOutputResolutionPreview();
         }
     } else if (event.data.cmd === 'process') {
         // Processing started
@@ -888,17 +878,8 @@ worker.onerror = () => {
 
 
 function requestOutputResolutionPreview(): void {
-    if (targetResolution === '2x') {
-        previewResolutionSequence++;
-        if (previewResolutionUrl) URL.revokeObjectURL(previewResolutionUrl);
-        previewResolutionUrl = null;
-        const previewImage = document.getElementById('upscaled-resolution-preview') as HTMLImageElement | null;
-        if (previewImage) previewImage.removeAttribute('src');
-        Alpine.store('networkStatus', 'Prévia 2× pronta');
-        return;
-    }
     const requestId = ++previewResolutionSequence;
-    Alpine.store('networkStatus', 'Preparando prévia no tamanho final…');
+    Alpine.store('networkStatus', 'Renderizando prévia final…');
     worker.postMessage({ cmd: 'preview-image', targetResolution, requestId } satisfies WorkerRequestMessage);
 }
 
