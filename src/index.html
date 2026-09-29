@@ -201,11 +201,6 @@
                 <div class="progress-track" id="progress" role="progressbar" aria-label="Progresso do processamento" aria-valuemin="0" aria-valuemax="100" x-bind:aria-valuenow="$store.progress" x-bind:aria-valuetext="Math.round($store.progress) + '%'"><div class="progress-fill" aria-hidden="true" x-bind:style="{width: $store.progress + '%'}"></div></div>
                 <button type="button" class="secondary mobile-process-action" onclick="togglePause()" x-text="$store.state === 'paused' ? 'Continuar' : 'Pausar processamento'"></button>
             </div>
-            <div id="download-link" class="complete-panel" x-show="$store.state === 'complete'">
-                <span class="state-icon success-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span><div class="complete-copy"><p class="eyebrow">Upscale concluído</p><h2>Sua mídia está pronta</h2><p x-show="$store.target === 'writer'">Salva como <strong class="inline-code" x-text="$store.download_name"></strong></p><p class="support-note">O processamento aconteceu no seu navegador. Nenhum arquivo saiu deste aparelho.</p></div>
-                
-                <button type="button" class="secondary another-button" onclick="location.reload()">Escolher outro arquivo</button>
-            </div>
         </section>
     </main>
 
@@ -224,7 +219,10 @@
             <p class="summary-note" x-show="$store.imageResized">Imagem redimensionada com qualidade alta para caber no processamento; a saída usa a versão preparada.</p>
         </div>
         <div class="inspector-actions complete-download-actions" x-show="$store.state === 'complete'">
+            <div class="complete-state-label"><span class="privacy-dot"></span><span>Upscale concluído · Sua mídia está pronta</span></div>
+            <p class="summary-note" x-show="$store.target === 'writer'">Salva como <strong x-text="$store.download_name"></strong></p>
             <a x-bind:href="$store.download_url" x-bind:download="$store.download_name" x-show="$store.target === 'blob'" class="primary action-button download-button complete-download-button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v3h16v-3"/></svg>Baixar arquivo</a>
+            <button type="button" class="secondary action-button another-button" onclick="location.reload()">Escolher outro arquivo</button>
         </div>
         <div class="print-settings" x-show="$store.mediaKind === 'image' && $store.state === 'preview'">
             <label for="image-dpi">Preparação automática para impressão</label>
