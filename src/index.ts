@@ -551,6 +551,7 @@ async function setupImage(file: File): Promise<void> {
         await workerReady;
         if (Alpine.store('state') !== 'loading') return;
         Alpine.store('state', 'preview');
+        selectWorkbenchPane('perfil');
         document.getElementById('app')?.classList.add('media-preview');
         requestAnimationFrame(() => requestAnimationFrame(() => {
             if (Alpine.store('state') === 'preview') fitComparison();
@@ -789,6 +790,7 @@ async function startVideoPreview(): Promise<void> {
     Alpine.store('style', content);
     refreshOutputSummary();
     Alpine.store('state', 'preview');
+    selectWorkbenchPane('perfil');
     document.getElementById('app')?.classList.add('media-preview');
     requestAnimationFrame(() => requestAnimationFrame(() => {
         if (Alpine.store('state') === 'preview') fitComparison();
@@ -876,6 +878,11 @@ worker.onerror = () => {
 };
 
 
+
+function selectWorkbenchPane(name: string): void {
+    const button = document.querySelector<HTMLButtonElement>(`#rail button[data-pane="${name}"]`);
+    if (button && !button.classList.contains('on')) button.click();
+}
 
 function requestOutputResolutionPreview(): void {
     const requestId = ++previewResolutionSequence;
