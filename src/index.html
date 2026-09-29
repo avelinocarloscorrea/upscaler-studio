@@ -128,6 +128,19 @@
                 <button type="button" class="iconbtn" id="b_pr" aria-label="Alternar painel direito" title="Alternar painel direito ( ] )"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg></button>
                 <button type="button" class="iconbtn" id="b_zen" aria-label="Modo foco" title="Modo foco ( F )"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/></svg></button>
             </div>
+            <div class="frame-scrubber" id="frame-scrubber" x-show="$store.state === 'preview' && $store.mediaKind === 'video'">
+                <button type="button" class="frame-step" id="preview-frame-prev" aria-label="Voltar um fotograma" title="Fotograma anterior">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5-7 7 7 7M21 5l-7 7 7 7"/></svg>
+                </button>
+                <div class="frame-scrubber-main">
+                    <div class="frame-scrubber-label"><span>Escolher fotograma da prévia</span><span><time id="preview-current-time">00:00.00</time> / <time id="preview-duration">00:00.00</time></span></div>
+                    <input id="preview-frame-slider" type="range" min="0" max="1" step="0.033333" value="0" aria-label="Selecionar fotograma do vídeo">
+                    <small>Arraste até o momento que deseja comparar.</small>
+                </div>
+                <button type="button" class="frame-step" id="preview-frame-next" aria-label="Avançar um fotograma" title="Próximo fotograma">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 5 7 7-7 7M3 5l7 7-7 7"/></svg>
+                </button>
+            </div>
             </div>
             <div id="preview" class="preview-caption" x-show="$store.state === 'preview'">
                 <span class="eyebrow" x-text="$store.mediaKind === 'image' ? 'Prévia da imagem' : 'Prévia do vídeo'"></span><p><strong x-text="$store.filename"></strong><span> será ampliado para </span><strong><span x-text="$store.outWidth"></span> × <span x-text="$store.outHeight"></span> px</strong><span x-show="$store.mediaKind === 'video'"> · arquivo estimado em </span><strong x-text="$store.size"></strong></p>
