@@ -101,6 +101,7 @@ declare global {
         switchNetworkStyle: (el: HTMLInputElement) => Promise<void>;
         switchTargetRes: (res: string) => void;
         setImageDpi: (dpi: string) => void;
+        setCleanMetadata: (enabled: boolean) => void;
         showSaveFilePicker: (options?: any) => Promise<FileSystemFileHandle>;
         togglePause: () => void;
         togglePanel: (side: 'left' | 'right', forceHidden?: boolean) => void;
@@ -109,6 +110,7 @@ declare global {
 
 let targetResolution = '2x';
 let imageDpi = 300;
+let cleanOutputMetadata = true;
 let networkUpdateSequence = 0;
 let activeNetworkUpdate = 0;
 let previewResolutionSequence = 0;
@@ -141,6 +143,7 @@ async function index(): Promise<void> {
     Alpine.store('mediaKind', 'video');
     Alpine.store('imageResized', false);
     Alpine.store('imageDpi', imageDpi);
+    Alpine.store('cleanOutputMetadata', cleanOutputMetadata);
     Alpine.store('printSize', '');
     Alpine.store('outWidth', 0);
     Alpine.store('outHeight', 0);
@@ -349,6 +352,10 @@ async function index(): Promise<void> {
         imageDpi = parsed;
         Alpine.store('imageDpi', imageDpi);
         refreshOutputSummary();
+    };
+    window.setCleanMetadata = (enabled: boolean) => {
+        cleanOutputMetadata = enabled;
+        Alpine.store('cleanOutputMetadata', cleanOutputMetadata);
     };
 
     requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -858,7 +865,8 @@ worker.onmessage = function (event: MessageEvent<WorkerResponseMessage>) {
             Alpine.store('networkStatus', 'Prévia no tamanho final');
         }
     } else if (event.data.cmd === 'image-finished') {
-        void setPngPrintResolution(event.data.data, imageDpi).then((printReadyPng) => {
+        const preparedPng = cleanOutputMetadata ? Promise.resolve(event.data.data) : setPngPrintResolution(event.data.data, imageDpi);
+        void preparedPng.then((printReadyPng) => {
             Alpine.store('target', 'blob');
             Alpine.store('download_url', window.URL.createObjectURL(printReadyPng));
             Alpine.store('state', 'complete');
