@@ -21,6 +21,15 @@ let ctx: ImageBitmapRenderingContext | null;
 let pauseLock: Promise<void> | null = null;
 let resolvePause: (() => void) | null = null;
 let currentBitmap: ImageBitmap | null = null;
+let renderQueue: Promise<void> = Promise.resolve();
+
+function enqueueRender<T>(operation: () => Promise<T>): Promise<T> {
+  const result = renderQueue.then(operation, operation);
+  renderQueue = result.then(() => undefined, () => undefined);
+  return result;
+}
+
+
 const gpuEnums = globalThis as typeof globalThis & {
   GPUBufferUsage?: { COPY_DST: number; MAP_READ: number };
   GPUMapMode?: { READ: number };
@@ -260,17 +269,17 @@ self.onmessage = async function (event: MessageEvent<WorkerRequestMessage>) {
     }
 
     case 'preview-image': {
-      const blob = await exportUpscaledImage(event.data.targetResolution);
+      const blob = await enqueueRender(() => exportUpscaledImage(event.data.targetResolution));
       postMessage({ cmd: 'preview-image', data: { requestId: event.data.requestId, blob } } satisfies WorkerResponseMessage);
       break;
     }
 
       case 'network':
-        await switchNetwork(
+        await enqueueRender(() => switchNetwork(
           event.data.data.name,
           event.data.data.weights,
           event.data.data.bitmap
-        );
+        ));
         postMessage({ cmd: 'network-ready', data: event.data.data.requestId } satisfies WorkerResponseMessage);
         break;
     }
