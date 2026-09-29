@@ -671,3 +671,7 @@ body.dropping #stage {
     #app.media-preview .canvasbar { position: fixed; z-index: 30; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); transform: translateX(-50%); margin: 0; }
     #app.media-preview .frame-scrubber { position: fixed; z-index: 29; left: 50%; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 56px); transform: translateX(-50%); width: calc(100vw - 20px); margin: 0; }
 }
+
+.metadata-clean-option { display: grid; grid-template-columns: 16px 1fr; align-items: start; gap: 5px 8px; margin-top: 12px; color: var(--ink); font-size: 10.5px; font-weight: 600; cursor: pointer; }
+.metadata-clean-option input { width: 15px; height: 15px; margin: 0; accent-color: var(--brand); }
+.metadata-clean-option span { grid-column: 2; color: var(--muted); font-size: 9.5px; font-weight: 400; line-height: 1.4; }
