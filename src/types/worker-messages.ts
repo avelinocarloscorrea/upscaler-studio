@@ -31,6 +31,7 @@ export interface NetworkData {
   name: string;
   bitmap: ImageBitmap;
   weights: any; // TODO: Type this based on WebSR weight structure
+  requestId: number;
 }
 
 // Messages sent FROM worker TO main thread
@@ -43,6 +44,7 @@ export type WorkerResponseMessage =
   | { cmd: 'finished'; data: Blob | null }
   | { cmd: 'image-finished'; data: Blob }
   | { cmd: 'ready' }
+  | { cmd: 'network-ready'; data: number }
   | { cmd: 'paused' }
   | { cmd: 'resumed' };
 
