@@ -111,6 +111,8 @@ let targetResolution = '2x';
 let imageDpi = 300;
 let networkUpdateSequence = 0;
 let activeNetworkUpdate = 0;
+let previewResolutionSequence = 0;
+let previewResolutionUrl: string | null = null;
 
 document.addEventListener("DOMContentLoaded", bindMediaPicker, { once: true });
 document.addEventListener("DOMContentLoaded", index);
@@ -338,7 +340,8 @@ async function index(): Promise<void> {
         const output = getOutputSize();
         const metadata = Alpine.store('metadata');
         if (metadata) { metadata.outputWidth = output.width; metadata.outputHeight = output.height; }
-        Alpine.store('networkStatus', `Saída: ${output.width} × ${output.height} px`);
+        if (Alpine.store('state') === 'preview') requestOutputResolutionPreview();
+        else Alpine.store('networkStatus', `Saída: ${output.width} × ${output.height} px`);
     };
     window.setImageDpi = (dpi: string) => {
         const parsed = Number(dpi);
@@ -415,6 +418,11 @@ async function loadMedia(file: File): Promise<void> {
 }
 
 function resetPreviewCanvas(): void {
+    previewResolutionSequence++;
+    if (previewResolutionUrl) URL.revokeObjectURL(previewResolutionUrl);
+    previewResolutionUrl = null;
+    const previousResolutionPreview = document.getElementById('upscaled-resolution-preview') as HTMLImageElement | null;
+    if (previousResolutionPreview) previousResolutionPreview.removeAttribute('src');
     networkUpdateSequence++;
     activeNetworkUpdate = networkUpdateSequence;
     Alpine.store('assessment', null);
@@ -823,7 +831,10 @@ worker.onmessage = function (event: MessageEvent<WorkerResponseMessage>) {
     } else if (event.data.cmd === 'ready') {
         resolveWorkerReady();
     } else if (event.data.cmd === 'network-ready') {
-        if (event.data.data === activeNetworkUpdate) Alpine.store('networkStatus', 'Modelo aplicado à prévia');
+        if (event.data.data === activeNetworkUpdate) {
+            Alpine.store('networkStatus', 'Modelo aplicado à prévia');
+            if (targetResolution !== '2x') requestOutputResolutionPreview();
+        }
     } else if (event.data.cmd === 'process') {
         // Processing started
 
@@ -838,6 +849,14 @@ worker.onmessage = function (event: MessageEvent<WorkerResponseMessage>) {
     } else if (event.data.cmd === 'finished') {
         Alpine.store('state', 'complete');
         Alpine.store('download_url', event.data.data ? window.URL.createObjectURL(event.data.data) : null);
+    } else if (event.data.cmd === 'preview-image') {
+        if (event.data.data.requestId === previewResolutionSequence) {
+            if (previewResolutionUrl) URL.revokeObjectURL(previewResolutionUrl);
+            previewResolutionUrl = URL.createObjectURL(event.data.data.blob);
+            const previewImage = document.getElementById('upscaled-resolution-preview') as HTMLImageElement | null;
+            if (previewImage) previewImage.src = previewResolutionUrl;
+            Alpine.store('networkStatus', 'Prévia no tamanho final');
+        }
     } else if (event.data.cmd === 'image-finished') {
         void setPngPrintResolution(event.data.data, imageDpi).then((printReadyPng) => {
             Alpine.store('target', 'blob');
@@ -859,6 +878,21 @@ worker.onerror = () => {
 };
 
 
+
+function requestOutputResolutionPreview(): void {
+    if (targetResolution === '2x') {
+        previewResolutionSequence++;
+        if (previewResolutionUrl) URL.revokeObjectURL(previewResolutionUrl);
+        previewResolutionUrl = null;
+        const previewImage = document.getElementById('upscaled-resolution-preview') as HTMLImageElement | null;
+        if (previewImage) previewImage.removeAttribute('src');
+        Alpine.store('networkStatus', 'Prévia 2× pronta');
+        return;
+    }
+    const requestId = ++previewResolutionSequence;
+    Alpine.store('networkStatus', 'Preparando prévia no tamanho final…');
+    worker.postMessage({ cmd: 'preview-image', targetResolution, requestId } satisfies WorkerRequestMessage);
+}
 
 /**
  * Switch to a different upscaling network
