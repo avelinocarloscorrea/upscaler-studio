@@ -68,7 +68,10 @@
     <aside id="left">
         <nav class="rail" id="rail" role="tablist" aria-label="Ferramentas">
             <button type="button" class="on" data-pane="video" role="tab" aria-selected="true" aria-controls="pane-video"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg><i>Mídia</i></button>
-            <button type="button" data-pane="aprimorar" role="tab" aria-selected="false" aria-controls="pane-aprimorar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-2-5.8L4 11l6-2.2L12 3Z"/><path d="m19 14 1 2.5 2.5 1-2.5 1L19 21l-1-2.5-2.5-1 2.5-1 1-2.5Z"/></svg><i>Aprimorar</i></button>
+            <button type="button" data-pane="perfil" role="tab" aria-selected="false" aria-controls="pane-perfil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-2-5.8L4 11l6-2.2L12 3Z"/><path d="m19 14 1 2.5 2.5 1-2.5 1L19 21l-1-2.5-2.5-1 2.5-1 1-2.5Z"/></svg><i>Perfil</i></button>
+            <button type="button" data-pane="tipo" role="tab" aria-selected="false" aria-controls="pane-tipo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1.5"/><path d="m4 17 5-5 3 3 3-4 5 6"/></svg><i>Imagem</i></button>
+            <button type="button" data-pane="resolucao" role="tab" aria-selected="false" aria-controls="pane-resolucao"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/><path d="M8 8h8v8H8z"/></svg><i>Saída</i></button>
+            <button type="button" data-pane="analise" role="tab" aria-selected="false" aria-controls="pane-analise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg><i>Análise</i></button>
             <span class="rail-grow"></span>
             <a href="guia.html" title="Guia do usuário"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.3 2.3 0 1 1 3.8 1.7c-.9.8-1.6 1.2-1.6 2.8m0 3h.01"/></svg><i>Ajuda</i></a>
         </nav>
@@ -76,6 +79,59 @@
             <section class="pane" id="pane-video" data-pane="video" role="tabpanel">
                 <header class="pane-h"><h2>Sua mídia</h2><p>Imagens e vídeos são processados neste aparelho.</p></header>
                 <div class="grp-block"><div class="grp-title">Arquivo de origem</div><p class="hint">Escolha uma imagem ou vídeo MP4. O arquivo não é enviado a um servidor.</p><div class="privacy-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg><span>Seus arquivos ficam neste aparelho.</span></div></div>
+            </section>
+                        <section class="pane" id="pane-perfil" data-pane="perfil" role="tabpanel" hidden>
+                <header class="pane-h"><h2>Perfil de processamento</h2><p>Escolha o equilíbrio entre velocidade e detalhe.</p></header>
+                <div class="grp-block"><fieldset id="settings" class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
+                    <legend class="sr-only">Perfil de processamento</legend>
+                    <input type="radio" name="options" id="option1" value="small" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option1"><span class="network-name">Leve</span><span class="network-detail">Mais rápido</span></label>
+                    <input type="radio" name="options" id="option2" value="medium" onclick="switchNetworkSize(this)" autocomplete="off" checked><label for="option2"><span class="network-name">Equilibrado</span><span class="network-detail">Recomendado</span></label>
+                    <input type="radio" name="options" id="option3" value="large" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option3"><span class="network-name">Detalhado</span><span class="network-detail">Mais lento</span></label>
+                </fieldset></div>
+            </section>
+            <section class="pane" id="pane-tipo" data-pane="tipo" role="tabpanel" hidden>
+                <header class="pane-h"><h2>Tipo de imagem</h2><p>Selecione o perfil que melhor combina com o conteúdo.</p></header>
+                <div class="grp-block"><fieldset class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
+                    <div class="grp-title">Tipo de imagem</div>
+                    <input type="radio" name="content" id="content-photo" value="rl" onchange="switchNetworkStyle(this)" autocomplete="off" checked><label for="content-photo"><span class="network-name">Fotografia</span><span class="network-detail">Pessoas, produtos e paisagens</span></label>
+                    <input type="radio" name="content" id="content-art" value="an" onchange="switchNetworkStyle(this)" autocomplete="off"><label for="content-art"><span class="network-name">Ilustração</span><span class="network-detail">Anime e arte 2D</span></label>
+                    <input type="radio" name="content" id="content-3d" value="3d" onchange="switchNetworkStyle(this)" autocomplete="off"><label for="content-3d"><span class="network-name">Render 3D</span><span class="network-detail">CGI e gráficos</span></label>
+                </fieldset></div>
+            </section>
+            <section class="pane" id="pane-resolucao" data-pane="resolucao" role="tabpanel" hidden>
+                <header class="pane-h"><h2>Resolução de saída</h2><p>Defina o tamanho final; a prévia acompanha a escolha.</p></header>
+                <div class="grp-block"><fieldset class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
+                    <div class="grp-title">Resolução final</div>
+                    <input type="radio" name="res" id="res2x" value="2x" onchange="window.switchTargetRes(this.value)" autocomplete="off" checked><label for="res2x"><span class="network-name">2× Original</span><span class="network-detail">Dobro das dimensões originais</span></label>
+                    <input type="radio" name="res" id="res720" value="720" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res720"><span class="network-name">720p HD</span><span class="network-detail">1280×720</span></label>
+                    <input type="radio" name="res" id="res1080" value="1080" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res1080"><span class="network-name">1080p</span><span class="network-detail">Full HD</span></label>
+                    <input type="radio" name="res" id="res4k" value="2160" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res4k"><span class="network-name">4K</span><span class="network-detail">Ultra HD</span></label>
+                </fieldset></div>
+            </section>
+            <section class="pane" id="pane-analise" data-pane="analise" role="tabpanel" hidden>
+                <header class="pane-h"><h2>Análise</h2><p>Indicadores locais do arquivo e dos metadados.</p></header>
+                <section class="analysis-card" x-show="$store.assessment && $store.metadata" aria-live="polite">
+            <div class="analysis-card-head"><span class="grp-title">Avaliação do arquivo</span><span class="analysis-chip" x-text="$store.networkStatus"></span></div>
+            <div class="analysis-metrics">
+                <div><span>Exposição</span><strong x-text="$store.assessment?.exposure"></strong></div>
+                <div><span>Contraste</span><strong x-text="$store.assessment?.contrast"></strong></div>
+                <div><span>Detalhe</span><strong x-text="$store.assessment?.detail"></strong></div>
+            </div>
+            <p class="analysis-note" x-text="$store.assessment?.note"></p>
+        </section>
+        <details class="metadata-card" x-show="$store.metadata">
+            <summary>Metadados e privacidade</summary>
+            <div class="metadata-grid">
+                <span>Arquivo</span><strong x-text="$store.metadata?.name"></strong>
+                <span>Formato</span><strong x-text="$store.metadata?.format"></strong>
+                <span>Tamanho original</span><strong x-text="$store.metadata?.bytes"></strong>
+                <span>Dimensões originais</span><strong><span x-text="$store.metadata?.width"></span> × <span x-text="$store.metadata?.height"></span> px</strong>
+                <span>Tamanho de saída</span><strong><span x-text="$store.metadata?.outputWidth"></span> × <span x-text="$store.metadata?.outputHeight"></span> px</strong>
+                <span x-show="$store.metadata?.duration">Duração</span><strong x-show="$store.metadata?.duration" x-text="$store.metadata?.duration"></strong>
+            </div>
+            <label class="metadata-clean-option" x-show="$store.mediaKind === 'image'"><input type="checkbox" checked x-bind:checked="$store.cleanOutputMetadata" x-bind:disabled="$store.state !== 'preview' || $store.mediaKind !== 'image'" onchange="setCleanMetadata(this.checked)" x-show="$store.mediaKind === 'image'"> Remover metadados adicionais do arquivo final <span>Ativado: exportação limpa; desative para incluir PPI selecionado no PNG.</span></label>
+            <p class="analysis-note" x-text="$store.metadata?.cleaning"></p>
+        </details>
             </section>
             <section class="pane" id="pane-aprimorar" data-pane="aprimorar" role="tabpanel" hidden>
                 <header class="pane-h"><h2>Ajustes</h2><p>Ajuste a ampliação e a resolução de saída.</p></header>
@@ -206,28 +262,6 @@
             <div class="summary-row" x-show="$store.mediaKind === 'image'"><span>Impressão</span><strong><span x-text="$store.imageDpi"></span> PPI · <span x-text="$store.printSize"></span></strong></div>
             <p class="summary-note" x-show="$store.imageResized">Imagem redimensionada com qualidade alta para caber no processamento; a saída usa a versão preparada.</p>
         </div>
-        <section class="analysis-card" x-show="$store.assessment && $store.metadata" aria-live="polite">
-            <div class="analysis-card-head"><span class="grp-title">Avaliação do arquivo</span><span class="analysis-chip" x-text="$store.networkStatus"></span></div>
-            <div class="analysis-metrics">
-                <div><span>Exposição</span><strong x-text="$store.assessment?.exposure"></strong></div>
-                <div><span>Contraste</span><strong x-text="$store.assessment?.contrast"></strong></div>
-                <div><span>Detalhe</span><strong x-text="$store.assessment?.detail"></strong></div>
-            </div>
-            <p class="analysis-note" x-text="$store.assessment?.note"></p>
-        </section>
-        <details class="metadata-card" x-show="$store.metadata">
-            <summary>Metadados e privacidade</summary>
-            <div class="metadata-grid">
-                <span>Arquivo</span><strong x-text="$store.metadata?.name"></strong>
-                <span>Formato</span><strong x-text="$store.metadata?.format"></strong>
-                <span>Tamanho original</span><strong x-text="$store.metadata?.bytes"></strong>
-                <span>Dimensões originais</span><strong><span x-text="$store.metadata?.width"></span> × <span x-text="$store.metadata?.height"></span> px</strong>
-                <span>Tamanho de saída</span><strong><span x-text="$store.metadata?.outputWidth"></span> × <span x-text="$store.metadata?.outputHeight"></span> px</strong>
-                <span x-show="$store.metadata?.duration">Duração</span><strong x-show="$store.metadata?.duration" x-text="$store.metadata?.duration"></strong>
-            </div>
-            <label class="metadata-clean-option" x-show="$store.mediaKind === 'image'"><input type="checkbox" checked x-bind:checked="$store.cleanOutputMetadata" x-bind:disabled="$store.state !== 'preview' || $store.mediaKind !== 'image'" onchange="setCleanMetadata(this.checked)" x-show="$store.mediaKind === 'image'"> Remover metadados adicionais do arquivo final <span>Ativado: exportação limpa; desative para incluir PPI selecionado no PNG.</span></label>
-            <p class="analysis-note" x-text="$store.metadata?.cleaning"></p>
-        </details>
         <div class="print-settings" x-show="$store.mediaKind === 'image' && $store.state === 'preview'">
             <label for="image-dpi">Preparação automática para impressão</label>
             <select id="image-dpi" onchange="setImageDpi(this.value)">
