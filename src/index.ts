@@ -399,6 +399,7 @@ function resetPreviewCanvas(): void {
     setComparePosition(50);
     zoom = 1;
     fitZoom = 1;
+    document.getElementById('app')?.classList.remove('zoomed-preview');
     const zval = document.getElementById('zval');
     if (zval) zval.textContent = '100%';
 }
@@ -930,7 +931,9 @@ function applyZoom(z: number) {
     const zval = document.getElementById('zval');
     if (zval) zval.textContent = `${Math.max(1, Math.round(zoom * 100))}%`;
     const stage = document.getElementById('preview-stage');
-    if (stage) stage.classList.toggle('can-pan', zoom > fitZoom + 0.001);
+    const zoomed = zoom > fitZoom * 1.01;
+    if (stage) stage.classList.toggle('can-pan', zoomed);
+    document.getElementById('app')?.classList.toggle('zoomed-preview', zoomed);
 }
 
 function zoomBy(factor: number, clientX?: number, clientY?: number): void {
