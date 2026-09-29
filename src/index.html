@@ -79,6 +79,26 @@
             </section>
             <section class="pane" id="pane-aprimorar" data-pane="aprimorar" role="tabpanel" hidden>
                 <header class="pane-h"><h2>Ajustes</h2><p>Ajuste a ampliação e a resolução de saída.</p></header>
+                <div class="settings-tabs" role="tablist" aria-label="Categorias de ajustes"><button type="button" role="tab" class="on" aria-selected="true" data-settings-tab data-settings-tab-panel="settings-panel-profile">Perfil</button><button type="button" role="tab" class="" aria-selected="false" data-settings-tab data-settings-tab-panel="settings-panel-content">Tipo de imagem</button><button type="button" role="tab" class="" aria-selected="false" data-settings-tab data-settings-tab-panel="settings-panel-resolution">Resolução</button></div>
+                <section class="settings-panel" id="settings-panel-profile" role="tabpanel"><div class="grp-block"><fieldset id="settings" class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
+                    <legend class="sr-only">Perfil de processamento</legend>
+                    <input type="radio" name="options" id="option1" value="small" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option1"><span class="network-name">Leve</span><span class="network-detail">Mais rápido</span></label>
+                    <input type="radio" name="options" id="option2" value="medium" onclick="switchNetworkSize(this)" autocomplete="off" checked><label for="option2"><span class="network-name">Equilibrado</span><span class="network-detail">Recomendado</span></label>
+                    <input type="radio" name="options" id="option3" value="large" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option3"><span class="network-name">Detalhado</span><span class="network-detail">Mais lento</span></label>
+                </fieldset></div></section>
+<section class="settings-panel" id="settings-panel-content" role="tabpanel" hidden><div class="grp-block"><fieldset class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
+                    <div class="grp-title">Tipo de imagem</div>
+                    <input type="radio" name="content" id="content-photo" value="rl" onchange="switchNetworkStyle(this)" autocomplete="off" checked><label for="content-photo"><span class="network-name">Fotografia</span><span class="network-detail">Pessoas, produtos e paisagens</span></label>
+                    <input type="radio" name="content" id="content-art" value="an" onchange="switchNetworkStyle(this)" autocomplete="off"><label for="content-art"><span class="network-name">Ilustração</span><span class="network-detail">Anime e arte 2D</span></label>
+                    <input type="radio" name="content" id="content-3d" value="3d" onchange="switchNetworkStyle(this)" autocomplete="off"><label for="content-3d"><span class="network-name">Render 3D</span><span class="network-detail">CGI e gráficos</span></label>
+                </fieldset></div></section>
+<section class="settings-panel" id="settings-panel-resolution" role="tabpanel" hidden><div class="grp-block"><fieldset class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
+                    <div class="grp-title">Resolução final</div>
+                    <input type="radio" name="res" id="res2x" value="2x" onchange="window.switchTargetRes(this.value)" autocomplete="off" checked><label for="res2x"><span class="network-name">2× Original</span><span class="network-detail">Dobro das dimensões originais</span></label>
+                    <input type="radio" name="res" id="res720" value="720" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res720"><span class="network-name">720p HD</span><span class="network-detail">1280×720</span></label>
+                    <input type="radio" name="res" id="res1080" value="1080" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res1080"><span class="network-name">1080p</span><span class="network-detail">Full HD</span></label>
+                    <input type="radio" name="res" id="res4k" value="2160" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res4k"><span class="network-name">4K</span><span class="network-detail">Ultra HD</span></label>
+                </fieldset></div></section>
                 <div class="grp-block"><fieldset id="settings" class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
                     <legend class="sr-only">Perfil de processamento</legend>
                     <input type="radio" name="options" id="option1" value="small" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option1"><span class="network-name">Leve</span><span class="network-detail">Mais rápido</span></label>
@@ -130,7 +150,7 @@
 
         <section id="start-panel" x-show="$store.state === 'preview' || $store.state === 'processing' || $store.state === 'complete' || $store.state === 'paused'">
             <div class="preview-shell" id="preview-shell">
-            <div class="preview-toolbar"><span class="eyebrow">Comparação</span><button type="button" id="full-screen" onclick="fullScreenPreview()" x-show="$store.state === 'preview'" aria-label="Abrir prévia em tela cheia" title="Tela cheia"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/></svg></button></div>
+            <div class="preview-toolbar"><span class="eyebrow">Comparação <small class="preview-feedback" x-text="$store.networkStatus"></small></span><button type="button" id="full-screen" onclick="fullScreenPreview()" x-show="$store.state === 'preview'" aria-label="Abrir prévia em tela cheia" title="Tela cheia"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/></svg></button></div>
             <div class="preview-stage" id="preview-stage">
                 <div id="image-compare-outer"><div id="image-compare"><div id="compare-original"><canvas id="original"></canvas></div><div id="compare-after"><canvas id="upscaled"></canvas></div><div id="compare-divider" aria-hidden="true"><span></span></div><input id="compare-slider" type="range" min="0" max="100" value="50" aria-label="Comparar original e imagem aprimorada"></div></div>
                 <span class="compare-label before-label">Original</span><span class="compare-label after-label">Aprimorado</span>
@@ -186,6 +206,26 @@
             <div class="summary-row" x-show="$store.mediaKind === 'image'"><span>Impressão</span><strong><span x-text="$store.imageDpi"></span> PPI · <span x-text="$store.printSize"></span></strong></div>
             <p class="summary-note" x-show="$store.imageResized">Imagem redimensionada com qualidade alta para caber no processamento; a saída usa a versão preparada.</p>
         </div>
+        <section class="analysis-card" x-show="$store.assessment && $store.metadata" aria-live="polite">
+            <div class="analysis-card-head"><span class="grp-title">Avaliação do arquivo</span><span class="analysis-chip" x-text="$store.networkStatus"></span></div>
+            <div class="analysis-metrics">
+                <div><span>Exposição</span><strong x-text="$store.assessment?.exposure"></strong></div>
+                <div><span>Contraste</span><strong x-text="$store.assessment?.contrast"></strong></div>
+                <div><span>Detalhe</span><strong x-text="$store.assessment?.detail"></strong></div>
+            </div>
+            <p class="analysis-note" x-text="$store.assessment?.note"></p>
+        </section>
+        <details class="metadata-card" x-show="$store.metadata">
+            <summary>Metadados e privacidade</summary>
+            <div class="metadata-grid">
+                <span>Arquivo</span><strong x-text="$store.metadata?.name"></strong>
+                <span>Formato</span><strong x-text="$store.metadata?.format"></strong>
+                <span>Tamanho original</span><strong x-text="$store.metadata?.bytes"></strong>
+                <span>Dimensões originais</span><strong><span x-text="$store.metadata?.width"></span> × <span x-text="$store.metadata?.height"></span> px</strong>
+                <template x-if="$store.metadata?.duration"><span>video metadata fields</span></template>
+            </div>
+            <p class="analysis-note" x-text="$store.metadata?.cleaning"></p>
+        </details>
         <div class="print-settings" x-show="$store.mediaKind === 'image' && $store.state === 'preview'">
             <label for="image-dpi">Preparação automática para impressão</label>
             <select id="image-dpi" onchange="setImageDpi(this.value)">
