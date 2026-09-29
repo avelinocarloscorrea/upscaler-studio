@@ -190,6 +190,7 @@ async function index(): Promise<void> {
         if (event.target === app && event.propertyName === 'grid-template-columns') {
             fitZoom = computeFitZoom();
             if (zoom <= fitZoom * 1.01) zoomFit();
+            else setComparePosition(Number((document.getElementById('compare-slider') as HTMLInputElement | null)?.value ?? 50));
         }
     });
     (['left', 'right'] as const).forEach((side) => {
@@ -1036,6 +1037,8 @@ function applyZoom(z: number) {
     const zoomed = zoom > fitZoom * 1.01;
     if (stage) stage.classList.toggle('can-pan', zoomed);
     document.getElementById('app')?.classList.toggle('zoomed-preview', zoomed);
+    const compareSlider = document.getElementById('compare-slider') as HTMLInputElement | null;
+    if (compareSlider) setComparePosition(Number(compareSlider.value));
 }
 
 function zoomBy(factor: number, clientX?: number, clientY?: number): void {
@@ -1065,6 +1068,8 @@ function zoomTo(clientX: number, clientY: number, factor: number): void {
     const newRect = outer.getBoundingClientRect();
     stage.scrollLeft += newRect.left + sourceX * newZoom - clientX;
     stage.scrollTop += newRect.top + sourceY * newZoom - clientY;
+    const compareSlider = document.getElementById('compare-slider') as HTMLInputElement | null;
+    if (compareSlider) setComparePosition(Number(compareSlider.value));
 }
 function zoomAt(clientX: number, clientY: number, delta: number) {
     zoomTo(clientX, clientY, delta > 0 ? 0.9 : 1.1);
@@ -1123,6 +1128,11 @@ function bindZoomControls() {
             try { stage.releasePointerCapture(e.pointerId); } catch { /* already released */ }
         }
     };
+
+    stage.addEventListener('scroll', () => {
+        const compareSlider = document.getElementById('compare-slider') as HTMLInputElement | null;
+        if (compareSlider) setComparePosition(Number(compareSlider.value));
+    }, { passive: true });
 
     stage.addEventListener('pointerup', endPan);
     stage.addEventListener('pointercancel', () => endPan());
