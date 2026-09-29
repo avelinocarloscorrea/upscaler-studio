@@ -833,3 +833,28 @@ body.acrylic .metadata-card {
     .progress-fill::after { animation: none; }
     .progress-fill, .frame-scrubber { transition: none; }
 }
+
+/* Panel headings inherit the panel surface; avoid isolated opaque text backplates. */
+.pane-h,
+.aside-title {
+    background: transparent !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+body.acrylic .pane-h,
+body.acrylic .aside-title {
+    background: transparent !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+.preview-feedback {
+    max-width: min(680px, 62vw);
+    overflow-wrap: anywhere;
+    line-height: 1.35;
+}
+@media (min-width: 821px) {
+    body.acrylic #app.media-preview:not(.zoomed-preview) .preview-toolbar {
+        left: calc(var(--gut-l) + 18px);
+        right: calc(var(--gut-r) + 18px);
+    }
+}
