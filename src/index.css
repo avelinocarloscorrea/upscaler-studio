@@ -945,54 +945,5 @@ body.acrylic .aside-title {
 }
 
 
-/* Keep the zoom controls clear of the completion/download panel. */
-#app:has(#download-link:not([style*="display: none"])) .canvasbar {
-    bottom: calc(max(14px, env(safe-area-inset-bottom)) + 132px);
-}
-@media (max-width: 820px) {
-    #app:has(#download-link:not([style*="display: none"])) .canvasbar {
-        bottom: calc(max(12px, env(safe-area-inset-bottom)) + 176px);
-    }
-}
-
-
-/* Place zoom controls in the inspector after an export completes. */
-@media (min-width: 821px) {
-    #app.export-complete .canvasbar {
-        position: fixed;
-        z-index: 31;
-        top: 258px;
-        right: 16px;
-        bottom: auto;
-        left: auto;
-        transform: none;
-        margin: 0;
-        max-width: calc(var(--rightw) - 32px);
-    }
-    #app.export-complete #b_pl,
-    #app.export-complete #b_pr,
-    #app.export-complete #b_zen {
-        display: none;
-    }
-    #app.export-complete #right .file-summary {
-        margin-top: 56px;
-    }
-}
-@media (max-width: 820px) {
-    #app.export-complete .canvasbar {
-        position: fixed;
-        z-index: 31;
-        top: 64px;
-        right: auto;
-        bottom: auto;
-        left: 50%;
-        transform: translateX(-50%);
-        margin: 0;
-        max-width: calc(100vw - 24px);
-    }
-    #app.export-complete #b_pl,
-    #app.export-complete #b_pr,
-    #app.export-complete #b_zen {
-        display: none;
-    }
-}
+.complete-download-actions { padding-top: 16px; }
+.complete-download-button { width: 100%; min-height: 42px; }
