@@ -293,9 +293,10 @@ async function index(): Promise<void> {
     setComparePosition(Number(compareSlider.value));
     previewResizeObserver?.disconnect();
     previewResizeObserver = new ResizeObserver(() => {
-        if (Alpine.store('state') === 'preview' && fitZoomSelected) {
+        const isWorkbenchVisible = () => ['preview', 'processing', 'paused', 'complete'].includes(Alpine.store('state'));
+        if (isWorkbenchVisible() && fitZoomSelected) {
             requestAnimationFrame(() => {
-                if (Alpine.store('state') === 'preview' && fitZoomSelected) zoomFit();
+                if (isWorkbenchVisible() && fitZoomSelected) zoomFit();
             });
         }
     });
