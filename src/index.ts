@@ -510,6 +510,13 @@ async function setupImage(file: File): Promise<void> {
         preparedImageBitmap = await createImageBitmap(bitmap);
 
         Alpine.store('imageResized', wasResized);
+        Alpine.store('metadata', {
+            name: file.name, format: file.type || 'Formato detectado pelo navegador',
+            bytes: humanFileSize(file.size), width: originalWidth, height: originalHeight,
+            outputWidth: width, outputHeight: height, duration: null,
+            cleaning: 'Os metadados de origem não são copiados para o PNG exportado.'
+        });
+        Alpine.store('assessment', assessBitmap(bitmap));
         mediaWidth = width;
         mediaHeight = height;
         Alpine.store('width', width);
@@ -544,6 +551,37 @@ async function setupImage(file: File): Promise<void> {
     } catch (error) {
         showError(error instanceof Error ? error.message : 'Não foi possível abrir esta imagem.');
     }
+}
+
+
+function assessBitmap(bitmap: ImageBitmap): { exposure: string; contrast: string; detail: string; note: string } {
+    const canvas = document.createElement('canvas');
+    canvas.width = 80;
+    canvas.height = 80;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) return { exposure: 'Indisponível', contrast: 'Indisponível', detail: 'Indisponível', note: 'Não foi possível analisar este quadro.' };
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    let sum = 0, squares = 0, edges = 0, count = 0;
+    const luminance = new Float32Array(canvas.width * canvas.height);
+    for (let i = 0, p = 0; i < pixels.length; i += 4, p++) {
+        const light = .2126 * pixels[i] + .7152 * pixels[i + 1] + .0722 * pixels[i + 2];
+        luminance[p] = light; sum += light; squares += light * light; count++;
+    }
+    for (let y = 0; y < canvas.height; y += 2) for (let x = 0; x < canvas.width; x += 2) {
+        const p = y * canvas.width + x;
+        if (x + 1 < canvas.width) edges += Math.abs(luminance[p] - luminance[p + 1]);
+        if (y + 1 < canvas.height) edges += Math.abs(luminance[p] - luminance[p + canvas.width]);
+    }
+    const mean = sum / count;
+    const deviation = Math.sqrt(Math.max(0, squares / count - mean * mean));
+    const edge = edges / (canvas.width * canvas.height);
+    return {
+        exposure: mean < 58 ? 'Possivelmente escura' : mean > 202 ? 'Possivelmente clara demais' : 'Exposição equilibrada',
+        contrast: deviation < 34 ? 'Contraste baixo' : deviation > 82 ? 'Contraste alto' : 'Contraste equilibrado',
+        detail: edge < 7 ? 'Poucos contornos nítidos' : edge > 21 ? 'Bastante detalhe ou ruído' : 'Detalhe moderado',
+        note: 'Análise aproximada do quadro de prévia. Tons escuros, fundos claros ou texturas podem influenciar os indicadores.'
+    };
 }
 
 //===================  Preview ===========================
@@ -708,6 +746,14 @@ async function startVideoPreview(): Promise<void> {
     configureFrameScrubber(duration, initialPreviewTime);
 
     const bitmap = await capturePreviewBitmap();
+    Alpine.store('metadata', {
+        name: currentMediaFile.name, format: currentMediaFile.type || 'Vídeo MP4',
+        bytes: humanFileSize(currentMediaFile.size), width: mediaWidth, height: mediaHeight,
+        outputWidth: mediaWidth * 2, outputHeight: mediaHeight * 2,
+        duration: formatPreviewTime(duration),
+        cleaning: 'O vídeo será recodificado sem copiar os metadados do arquivo original.'
+    });
+    Alpine.store('assessment', assessBitmap(bitmap));
     const upscaled = upscaled_canvas.transferControlToOffscreen();
     const original = original_canvas.transferControlToOffscreen();
     content = 'rl';
