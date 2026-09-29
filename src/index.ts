@@ -336,6 +336,8 @@ async function index(): Promise<void> {
         targetResolution = res;
         refreshOutputSummary();
         const output = getOutputSize();
+        const metadata = Alpine.store('metadata');
+        if (metadata) { metadata.outputWidth = output.width; metadata.outputHeight = output.height; }
         Alpine.store('networkStatus', `Saída: ${output.width} × ${output.height} px`);
     };
     window.setImageDpi = (dpi: string) => {
@@ -821,7 +823,7 @@ worker.onmessage = function (event: MessageEvent<WorkerResponseMessage>) {
     } else if (event.data.cmd === 'ready') {
         resolveWorkerReady();
     } else if (event.data.cmd === 'network-ready') {
-        if (event.data.data === activeNetworkUpdate) Alpine.store('networkStatus', 'Prévia atualizada');
+        if (event.data.data === activeNetworkUpdate) Alpine.store('networkStatus', 'Modelo aplicado à prévia');
     } else if (event.data.cmd === 'process') {
         // Processing started
 
@@ -866,7 +868,9 @@ async function updateNetwork(): Promise<void> {
     activeNetworkUpdate = requestId;
     const selectedSize = size;
     const selectedContent = content;
-    Alpine.store('networkStatus', 'Atualizando prévia…');
+    const contentLabel = selectedContent === 'rl' ? 'Fotografia' : selectedContent === 'an' ? 'Ilustração' : 'Render 3D';
+    const sizeLabel = selectedSize === 'small' ? 'Leve' : selectedSize === 'medium' ? 'Equilibrado' : 'Detalhado';
+    Alpine.store('networkStatus', `Aplicando ${contentLabel} · ${sizeLabel}…`);
     try {
         const bitmap = mediaKind === 'image'
             ? await createImageBitmap(preparedImageBitmap ?? currentMediaFile)
