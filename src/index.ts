@@ -33,6 +33,7 @@ let mediaKind: 'video' | 'image' = 'video';
 let mediaWidth = 0;
 let mediaHeight = 0;
 let previewUrl: string | null = null;
+let preparedImageBitmap: ImageBitmap | null = null;
 let previewSeekVersion = 0;
 let resolveWorkerReady!: () => void;
 let workerReady = new Promise<void>((resolve) => { resolveWorkerReady = resolve; });
@@ -327,6 +328,10 @@ async function index(): Promise<void> {
         Alpine.store('imageDpi', imageDpi);
         refreshOutputSummary();
     };
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.getElementById('app-boot')?.classList.add('is-ready');
+    }));
 }
 
 /**
@@ -391,6 +396,8 @@ async function loadMedia(file: File): Promise<void> {
 }
 
 function resetPreviewCanvas(): void {
+    preparedImageBitmap?.close();
+    preparedImageBitmap = null;
     if (video) {
         video.pause();
         video.removeAttribute('src');
@@ -476,6 +483,8 @@ async function setupImage(file: File): Promise<void> {
         }
         const width = bitmap.width;
         const height = bitmap.height;
+        preparedImageBitmap?.close();
+        preparedImageBitmap = await createImageBitmap(bitmap);
 
         Alpine.store('imageResized', wasResized);
         mediaWidth = width;
@@ -781,7 +790,7 @@ worker.onerror = () => {
  */
 async function updateNetwork(): Promise<void> {
     const bitmap = mediaKind === 'image'
-        ? await createImageBitmap(currentMediaFile)
+        ? await createImageBitmap(preparedImageBitmap ?? currentMediaFile)
         : await capturePreviewBitmap();
 
     worker.postMessage({
