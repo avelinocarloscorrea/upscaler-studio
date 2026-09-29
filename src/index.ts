@@ -453,6 +453,9 @@ async function setupImage(file: File): Promise<void> {
         await workerReady;
         if (Alpine.store('state') !== 'loading') return;
         Alpine.store('state', 'preview');
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            if (Alpine.store('state') === 'preview') fitComparison();
+        }));
     } catch (error) {
         showError(error instanceof Error ? error.message : 'Não foi possível abrir esta imagem.');
     }
@@ -648,6 +651,9 @@ async function startVideoPreview(): Promise<void> {
     Alpine.store('style', content);
     refreshOutputSummary();
     Alpine.store('state', 'preview');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (Alpine.store('state') === 'preview') fitComparison();
+    }));
 }
 
 async function fullScreenPreview(): Promise<void> {
@@ -722,7 +728,7 @@ worker.onerror = () => {
 async function updateNetwork(): Promise<void> {
     const bitmap = mediaKind === 'image'
         ? await createImageBitmap(currentMediaFile)
-        : await createImageBitmap(video);
+        : await capturePreviewBitmap();
 
     worker.postMessage({
         cmd: 'network',
