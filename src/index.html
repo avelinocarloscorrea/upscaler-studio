@@ -73,6 +73,12 @@
                     <input type="radio" name="options" id="option3" value="large" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option3"><span class="network-name">Detalhado</span><span class="network-detail">Mais lento</span></label>
                 </fieldset></div>
                 <div class="grp-block"><fieldset class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
+                    <div class="grp-title">Tipo de imagem</div>
+                    <input type="radio" name="content" id="content-photo" value="rl" onchange="switchNetworkStyle(this)" autocomplete="off" checked><label for="content-photo"><span class="network-name">Fotografia</span><span class="network-detail">Pessoas, produtos e paisagens</span></label>
+                    <input type="radio" name="content" id="content-art" value="an" onchange="switchNetworkStyle(this)" autocomplete="off"><label for="content-art"><span class="network-name">Ilustração</span><span class="network-detail">Anime e arte 2D</span></label>
+                    <input type="radio" name="content" id="content-3d" value="3d" onchange="switchNetworkStyle(this)" autocomplete="off"><label for="content-3d"><span class="network-name">Render 3D</span><span class="network-detail">CGI e gráficos</span></label>
+                </fieldset></div>
+                <div class="grp-block"><fieldset class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
                     <div class="grp-title">Resolução final</div>
                     <input type="radio" name="res" id="res2x" value="2x" onchange="window.switchTargetRes(this.value)" autocomplete="off" checked><label for="res2x"><span class="network-name">2× Original</span><span class="network-detail">Dobro das dimensões originais</span></label>
                     <input type="radio" name="res" id="res720" value="720" onchange="window.switchTargetRes(this.value)" autocomplete="off"><label for="res720"><span class="network-name">720p HD</span><span class="network-detail">1280×720</span></label>
@@ -165,6 +171,16 @@
             <div class="summary-row"><span>Resolução</span><strong><span x-text="$store.outWidth"></span> × <span x-text="$store.outHeight"></span></strong></div>
             <div class="summary-row"><span>Tamanho estimado</span><strong x-text="$store.size"></strong></div>
             <div class="summary-row"><span>Formato</span><strong x-text="$store.mediaKind === 'image' ? 'PNG' : 'MP4'"></strong></div>
+            <div class="summary-row" x-show="$store.mediaKind === 'image'"><span>Impressão</span><strong><span x-text="$store.imageDpi"></span> PPI · <span x-text="$store.printSize"></span></strong></div>
+        </div>
+        <div class="print-settings" x-show="$store.mediaKind === 'image' && ($store.state === 'preview' || $store.state === 'processing' || $store.state === 'complete')">
+            <label for="image-dpi">Preparação automática para impressão</label>
+            <select id="image-dpi" onchange="setImageDpi(this.value)">
+                <option value="300" selected>Detalhada · 300 PPI</option>
+                <option value="220">Fotográfica · 220 PPI</option>
+                <option value="150">Grande formato · 150 PPI</option>
+            </select>
+            <p>O tamanho físico é calculado automaticamente. PPI informa a densidade de impressão; não acrescenta pixels nem detalhes.</p>
         </div>
         <div class="inspector-actions" x-show="$store.state === 'preview' || $store.state === 'processing' || $store.state === 'paused'">
             <button type="button" class="primary action-button" onclick="initRecording()" x-show="$store.state === 'preview'" x-text="$store.mediaKind === 'image' ? 'Baixar PNG' : ($store.target === 'writer' ? 'Escolher destino e iniciar' : 'Iniciar upscale')"></button>
