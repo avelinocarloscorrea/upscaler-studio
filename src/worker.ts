@@ -171,7 +171,8 @@ async function exportUpscaledImage(targetResolution?: string): Promise<Blob> {
 
   if (targetResolution && targetResolution !== '2x') {
       const targetHeight = parseInt(targetResolution, 10);
-      const targetWidth = Math.round((width / height) * targetHeight);
+      let targetWidth = Math.round((width / height) * targetHeight);
+      if (targetWidth % 2 !== 0) targetWidth += 1;
       const resizeCanvas = new OffscreenCanvas(targetWidth, targetHeight);
       const resizeCtx = resizeCanvas.getContext('2d');
       if (resizeCtx) {
