@@ -407,6 +407,8 @@ async function loadMedia(file: File): Promise<void> {
         Alpine.store('filename', file.name);
         Alpine.store('download_name', download_name);
         Alpine.store('mediaKind', mediaKind);
+        document.getElementById('app')?.classList.add('image-preview');
+        document.getElementById('app')?.classList.remove('video-preview');
         Alpine.store('state', 'loading');
         await setupImage(file);
         return;
@@ -427,6 +429,8 @@ async function loadMedia(file: File): Promise<void> {
     Alpine.store('filename', file.name);
     Alpine.store('download_name', download_name);
     Alpine.store('mediaKind', mediaKind);
+    document.getElementById('app')?.classList.add('video-preview');
+    document.getElementById('app')?.classList.remove('image-preview');
     Alpine.store('state', 'loading');
     await setupPreview(file);
 }
@@ -442,7 +446,7 @@ function resetPreviewCanvas(): void {
     Alpine.store('assessment', null);
     Alpine.store('metadata', null);
     Alpine.store('networkStatus', 'Prévia pronta');
-    document.getElementById('app')?.classList.remove('media-preview');
+    document.getElementById('app')?.classList.remove('media-preview', 'image-preview', 'video-preview');
     preparedImageBitmap?.close();
     preparedImageBitmap = null;
     if (video) {
@@ -1168,8 +1172,15 @@ function computeFitZoom() {
     const fullscreen = document.fullscreenElement === shell;
     const padX = 24;
     const padY = 24;
-    const maxWidth = Math.max(160, (fullscreen ? window.innerWidth : stage.clientWidth) - padX);
-    const maxHeight = Math.max(140, (fullscreen ? window.innerHeight - 120 : stage.clientHeight) - padY);
+    const stageStyle = window.getComputedStyle(stage);
+    const contentWidth = fullscreen
+        ? window.innerWidth
+        : stage.clientWidth - parseFloat(stageStyle.paddingLeft) - parseFloat(stageStyle.paddingRight);
+    const contentHeight = fullscreen
+        ? window.innerHeight - 120
+        : stage.clientHeight - parseFloat(stageStyle.paddingTop) - parseFloat(stageStyle.paddingBottom);
+    const maxWidth = Math.max(160, contentWidth - padX);
+    const maxHeight = Math.max(140, contentHeight - padY);
     const scaleX = maxWidth / (mediaWidth * 2);
     const scaleY = maxHeight / (mediaHeight * 2);
     return Math.max(0.05, Math.min(scaleX, scaleY));
