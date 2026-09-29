@@ -225,7 +225,7 @@
                 <span>Tamanho de saída</span><strong><span x-text="$store.metadata?.outputWidth"></span> × <span x-text="$store.metadata?.outputHeight"></span> px</strong>
                 <span x-show="$store.metadata?.duration">Duração</span><strong x-show="$store.metadata?.duration" x-text="$store.metadata?.duration"></strong>
             </div>
-            <label class="metadata-clean-option"><input type="checkbox" checked onchange="setCleanMetadata(this.checked)"> Remover metadados adicionais do arquivo final <span>Ativado: exportação limpa; desative para incluir PPI selecionado no PNG.</span></label>
+            <label class="metadata-clean-option"><input type="checkbox" checked x-bind:checked="$store.cleanOutputMetadata" x-bind:disabled="$store.state !== 'preview' || $store.mediaKind !== 'image'" onchange="setCleanMetadata(this.checked)" x-show="$store.mediaKind === 'image'"> Remover metadados adicionais do arquivo final <span>Ativado: exportação limpa; desative para incluir PPI selecionado no PNG.</span></label>
             <p class="analysis-note" x-text="$store.metadata?.cleaning"></p>
         </details>
         <div class="print-settings" x-show="$store.mediaKind === 'image' && $store.state === 'preview'">
