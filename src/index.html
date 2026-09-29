@@ -143,7 +143,7 @@
             </div>
             </div>
             <div id="preview" class="preview-caption" x-show="$store.state === 'preview'">
-                <span class="eyebrow" x-text="$store.mediaKind === 'image' ? 'Prévia da imagem' : 'Prévia do vídeo'"></span><p><strong x-text="$store.filename"></strong><span> será ampliado para </span><strong><span x-text="$store.outWidth"></span> × <span x-text="$store.outHeight"></span> px</strong><span x-show="$store.mediaKind === 'video'"> · arquivo estimado em </span><strong x-text="$store.size"></strong></p>
+                <span class="eyebrow" x-text="$store.mediaKind === 'image' ? 'Prévia da imagem' : 'Prévia do vídeo'"></span><p><strong x-text="$store.filename"></strong><span> será ampliado para </span><strong><span x-text="$store.outWidth"></span> × <span x-text="$store.outHeight"></span> px</strong><span x-show="$store.mediaKind === 'video'"> · arquivo estimado em </span><strong x-text="$store.size"></strong><span x-show="$store.imageResized"> · imagem redimensionada com qualidade alta para caber no processamento; a saída usa a versão redimensionada.</span></p>
             </div>
             <div id="info" class="process-info" x-show="$store.state === 'processing' || $store.state === 'paused'">
                 <div class="process-copy"><div><span class="eyebrow" x-text="$store.state === 'paused' ? 'Processamento pausado' : 'Aprimorando vídeo'"></span><p><strong x-text="$store.filename"></strong><span> · tempo restante </span><strong x-text="$store.eta"></strong></p></div><span class="progress-value" x-text="Math.round($store.progress) + '%' "></span></div>
