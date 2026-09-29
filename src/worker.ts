@@ -92,6 +92,7 @@ async function init(config: InitData): Promise<void> {
   });
 
   await websr.render(config.bitmap as any);
+  await websr.context.device.queue.onSubmittedWorkDone();
 
   if (ctx) {
     ctx.transferFromImageBitmap(bitmap2);
@@ -115,6 +116,7 @@ async function switchNetwork(name: string, weights: any, bitmap: ImageBitmap): P
     resizeWidth: resolution.width * 2,
   });
   await websr.render(bitmap as any);
+  await websr.context.device.queue.onSubmittedWorkDone();
   if (ctx) ctx.transferFromImageBitmap(originalFrame);
   else originalFrame.close();
 }
