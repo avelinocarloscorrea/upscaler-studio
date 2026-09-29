@@ -45,7 +45,7 @@
 
 <body x-data="{}">
 <div id="app-boot" role="status" aria-live="polite"><span class="boot-mark" aria-hidden="true"></span><strong>Upscaler Studio</strong><span>Preparando seu espaço de trabalho…</span><i aria-hidden="true"></i></div>
-<div id="app">
+<div id="app" x-bind:class="{ 'export-complete': $store.state === 'complete' }">
     <header id="bar">
         <a class="brand" id="brandLink" rel="noopener noreferrer" title="Mais ferramentas Esmeralda Paper" aria-label="Mais ferramentas Esmeralda Paper">
             <span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="17" fill="var(--brand)"/><rect x="12" y="15" width="40" height="34" rx="6" fill="none" stroke="var(--surface)" stroke-opacity=".9" stroke-width="2"/><circle cx="22" cy="25" r="3" fill="var(--gold)"/><path d="m16 44 11-12 8 8 6-6 8 10H16Z" fill="var(--surface)" fill-opacity=".93"/><path d="m31 32 13-13m-8 0h8v8" fill="none" stroke="var(--gold)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.8"/></svg></span>
