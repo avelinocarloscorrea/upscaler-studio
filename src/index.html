@@ -84,7 +84,7 @@
                 <header class="pane-h"><h2>Perfil de processamento</h2><p>Escolha o equilíbrio entre velocidade e detalhe.</p></header>
                 <div class="grp-block"><fieldset id="settings" class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
                     <legend class="sr-only">Perfil de processamento</legend>
-                    <input type="radio" name="options" id="option1" value="small" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option1"><span class="network-name">Leve</span><span class="network-detail">Mais rápido</span></label>
+                    <input type="radio" name="options" id="option1" value="small" onchange="window.switchNetworkSize(this)" autocomplete="off"><label for="option1"><span class="network-name">Leve</span><span class="network-detail">Mais rápido</span></label>
                     <input type="radio" name="options" id="option2" value="medium" onclick="switchNetworkSize(this)" autocomplete="off" checked><label for="option2"><span class="network-name">Equilibrado</span><span class="network-detail">Recomendado</span></label>
                     <input type="radio" name="options" id="option3" value="large" onclick="switchNetworkSize(this)" autocomplete="off"><label for="option3"><span class="network-name">Detalhado</span><span class="network-detail">Mais lento</span></label>
                 </fieldset></div>
@@ -93,7 +93,7 @@
                 <header class="pane-h"><h2>Tipo de imagem</h2><p>Selecione o perfil que melhor combina com o conteúdo.</p></header>
                 <div class="grp-block"><fieldset class="network-options" x-bind:disabled="$store.state === 'init' || $store.state === 'unsupported' || $store.state === 'loading'">
                     <div class="grp-title">Tipo de imagem</div>
-                    <input type="radio" name="content" id="content-photo" value="rl" onchange="switchNetworkStyle(this)" autocomplete="off" checked><label for="content-photo"><span class="network-name">Fotografia</span><span class="network-detail">Pessoas, produtos e paisagens</span></label>
+                    <input type="radio" name="content" id="content-photo" value="rl" onchange="window.switchNetworkStyle(this)" autocomplete="off" checked><label for="content-photo"><span class="network-name">Fotografia</span><span class="network-detail">Pessoas, produtos e paisagens</span></label>
                     <input type="radio" name="content" id="content-art" value="an" onchange="switchNetworkStyle(this)" autocomplete="off"><label for="content-art"><span class="network-name">Ilustração</span><span class="network-detail">Anime e arte 2D</span></label>
                     <input type="radio" name="content" id="content-3d" value="3d" onchange="switchNetworkStyle(this)" autocomplete="off"><label for="content-3d"><span class="network-name">Render 3D</span><span class="network-detail">CGI e gráficos</span></label>
                 </fieldset></div>
