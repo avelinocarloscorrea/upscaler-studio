@@ -488,15 +488,15 @@ function formatPreviewTime(seconds: number): string {
     return `${String(minutes).padStart(2, '0')}:${remaining.toFixed(2).padStart(5, '0')}`;
 }
 
-function configureFrameScrubber(duration: number): void {
+function configureFrameScrubber(duration: number, initialTime = 0): void {
     const slider = document.getElementById('preview-frame-slider') as HTMLInputElement | null;
     const current = document.getElementById('preview-current-time');
     const total = document.getElementById('preview-duration');
     if (!slider || !current || !total) return;
     slider.max = String(Math.max(duration, 0.001));
     slider.step = String(1 / Math.max(1, Number(video?.dataset.frameRate) || 30));
-    slider.value = '0';
-    current.textContent = formatPreviewTime(0);
+    slider.value = String(initialTime);
+    current.textContent = formatPreviewTime(initialTime);
     total.textContent = formatPreviewTime(duration);
     slider.oninput = () => {
         current.textContent = formatPreviewTime(Number(slider.value));
@@ -539,6 +539,70 @@ async function seekPreviewFrame(time: number): Promise<void> {
     await updateNetwork();
 }
 
+async function waitForVideoFrame(targetTime: number): Promise<void> {
+    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+        await new Promise<void>((resolve, reject) => {
+            const timeout = window.setTimeout(() => {
+                cleanup();
+                reject(new Error('O navegador não conseguiu decodificar um quadro deste vídeo. Tente outro MP4.'));
+            }, 10000);
+            const cleanup = () => {
+                window.clearTimeout(timeout);
+                video.removeEventListener('loadeddata', onReady);
+                video.removeEventListener('error', onError);
+            };
+            const onReady = () => { cleanup(); resolve(); };
+            const onError = () => { cleanup(); reject(new Error('Não foi possível decodificar este vídeo neste navegador. Verifique o codec do MP4.')); };
+            video.addEventListener('loadeddata', onReady, { once: true });
+            video.addEventListener('error', onError, { once: true });
+        });
+    }
+
+    if (Math.abs(video.currentTime - targetTime) > 0.01) {
+        await new Promise<void>((resolve, reject) => {
+            const timeout = window.setTimeout(() => {
+                cleanup();
+                reject(new Error('O vídeo demorou demais para localizar o quadro da prévia. Tente outro arquivo.'));
+            }, 10000);
+            const cleanup = () => {
+                window.clearTimeout(timeout);
+                video.removeEventListener('seeked', onSeeked);
+                video.removeEventListener('error', onError);
+            };
+            const onSeeked = () => { cleanup(); resolve(); };
+            const onError = () => { cleanup(); reject(new Error('Não foi possível localizar um quadro neste vídeo. Tente outro MP4.')); };
+            video.addEventListener('seeked', onSeeked, { once: true });
+            video.addEventListener('error', onError, { once: true });
+            video.currentTime = targetTime;
+        });
+    }
+
+    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+        throw new Error('O navegador ainda não disponibilizou um quadro do vídeo. Tente novamente ou escolha outro MP4.');
+    }
+    await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+}
+
+async function capturePreviewBitmap(): Promise<ImageBitmap> {
+    try {
+        return await createImageBitmap(video);
+    } catch {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext('2d');
+        if (!context || !canvas.width || !canvas.height) {
+            throw new Error('Não foi possível obter um quadro deste vídeo. Tente outro arquivo MP4.');
+        }
+        try {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            return await createImageBitmap(canvas);
+        } catch {
+            throw new Error('O navegador não conseguiu preparar o quadro da prévia. Verifique se o vídeo pode ser reproduzido e tente outro MP4.');
+        }
+    }
+}
+
 async function startVideoPreview(): Promise<void> {
     mediaWidth = video.videoWidth;
     mediaHeight = video.videoHeight;
@@ -551,9 +615,11 @@ async function startVideoPreview(): Promise<void> {
     fitComparison();
 
     const duration = Number.isFinite(video.duration) ? video.duration : 0;
-    configureFrameScrubber(duration);
+    const initialPreviewTime = duration > 0.08 ? Math.min(duration * 0.2, duration - 0.04) : 0;
+    await waitForVideoFrame(initialPreviewTime);
+    configureFrameScrubber(duration, initialPreviewTime);
 
-    const bitmap = await createImageBitmap(video);
+    const bitmap = await capturePreviewBitmap();
     const upscaled = upscaled_canvas.transferControlToOffscreen();
     const original = original_canvas.transferControlToOffscreen();
     content = 'rl';
