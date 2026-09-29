@@ -109,6 +109,8 @@ declare global {
 
 let targetResolution = '2x';
 let imageDpi = 300;
+let networkUpdateSequence = 0;
+let activeNetworkUpdate = 0;
 
 document.addEventListener("DOMContentLoaded", bindMediaPicker, { once: true });
 document.addEventListener("DOMContentLoaded", index);
@@ -140,6 +142,9 @@ async function index(): Promise<void> {
     Alpine.store('printSize', '');
     Alpine.store('outWidth', 0);
     Alpine.store('outHeight', 0);
+    Alpine.store('networkStatus', 'Prévia pronta');
+    Alpine.store('assessment', null);
+    Alpine.store('metadata', null);
 
     Alpine.start();
 
@@ -253,6 +258,16 @@ async function index(): Promise<void> {
         button.addEventListener('click', () => button.closest('dialog')?.close());
     });
 
+    const settingTabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-settings-tab]'));
+    settingTabs.forEach((tab) => tab.addEventListener('click', () => {
+        settingTabs.forEach((item) => {
+            const selected = item === tab;
+            item.classList.toggle('on', selected);
+            item.setAttribute('aria-selected', String(selected));
+            document.getElementById(item.dataset.settingsTabPanel || '')?.toggleAttribute('hidden', !selected);
+        });
+    }));
+
     const rail = document.getElementById('rail');
     rail?.addEventListener('click', (event) => {
         const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-pane]');
@@ -320,6 +335,8 @@ async function index(): Promise<void> {
     window.switchTargetRes = (res: string) => {
         targetResolution = res;
         refreshOutputSummary();
+        const output = getOutputSize();
+        Alpine.store('networkStatus', `Saída: ${output.width} × ${output.height} px`);
     };
     window.setImageDpi = (dpi: string) => {
         const parsed = Number(dpi);
@@ -396,6 +413,12 @@ async function loadMedia(file: File): Promise<void> {
 }
 
 function resetPreviewCanvas(): void {
+    networkUpdateSequence++;
+    activeNetworkUpdate = networkUpdateSequence;
+    Alpine.store('assessment', null);
+    Alpine.store('metadata', null);
+    Alpine.store('networkStatus', 'Prévia pronta');
+    document.getElementById('app')?.classList.remove('media-preview');
     preparedImageBitmap?.close();
     preparedImageBitmap = null;
     if (video) {
@@ -514,6 +537,7 @@ async function setupImage(file: File): Promise<void> {
         await workerReady;
         if (Alpine.store('state') !== 'loading') return;
         Alpine.store('state', 'preview');
+        document.getElementById('app')?.classList.add('media-preview');
         requestAnimationFrame(() => requestAnimationFrame(() => {
             if (Alpine.store('state') === 'preview') fitComparison();
         }));
@@ -712,6 +736,7 @@ async function startVideoPreview(): Promise<void> {
     Alpine.store('style', content);
     refreshOutputSummary();
     Alpine.store('state', 'preview');
+    document.getElementById('app')?.classList.add('media-preview');
     requestAnimationFrame(() => requestAnimationFrame(() => {
         if (Alpine.store('state') === 'preview') fitComparison();
     }));
@@ -749,6 +774,8 @@ worker.onmessage = function (event: MessageEvent<WorkerResponseMessage>) {
 
     } else if (event.data.cmd === 'ready') {
         resolveWorkerReady();
+    } else if (event.data.cmd === 'network-ready') {
+        if (event.data.data === activeNetworkUpdate) Alpine.store('networkStatus', 'Prévia atualizada');
     } else if (event.data.cmd === 'process') {
         // Processing started
 
@@ -789,18 +816,31 @@ worker.onerror = () => {
  * Switch to a different upscaling network
  */
 async function updateNetwork(): Promise<void> {
-    const bitmap = mediaKind === 'image'
-        ? await createImageBitmap(preparedImageBitmap ?? currentMediaFile)
-        : await capturePreviewBitmap();
-
-    worker.postMessage({
-        cmd: 'network',
-        data: {
-            name: networks[size].name,
-            bitmap,
-            weights: weights[size][content]
+    const requestId = ++networkUpdateSequence;
+    activeNetworkUpdate = requestId;
+    const selectedSize = size;
+    const selectedContent = content;
+    Alpine.store('networkStatus', 'Atualizando prévia…');
+    try {
+        const bitmap = mediaKind === 'image'
+            ? await createImageBitmap(preparedImageBitmap ?? currentMediaFile)
+            : await capturePreviewBitmap();
+        if (requestId !== networkUpdateSequence) {
+            bitmap.close();
+            return;
         }
-    } satisfies WorkerRequestMessage);
+        worker.postMessage({
+            cmd: 'network',
+            data: {
+                name: networks[selectedSize].name,
+                bitmap,
+                weights: weights[selectedSize][selectedContent],
+                requestId
+            }
+        } satisfies WorkerRequestMessage);
+    } catch (error) {
+        if (requestId === networkUpdateSequence) showError(error instanceof Error ? error.message : 'Não foi possível atualizar a prévia.');
+    }
 }
 
 //===================  Process ===========================
