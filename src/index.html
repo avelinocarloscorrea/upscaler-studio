@@ -173,7 +173,7 @@
             <div class="summary-row"><span>Formato</span><strong x-text="$store.mediaKind === 'image' ? 'PNG' : 'MP4'"></strong></div>
             <div class="summary-row" x-show="$store.mediaKind === 'image'"><span>Impressão</span><strong><span x-text="$store.imageDpi"></span> PPI · <span x-text="$store.printSize"></span></strong></div>
         </div>
-        <div class="print-settings" x-show="$store.mediaKind === 'image' && ($store.state === 'preview' || $store.state === 'processing' || $store.state === 'complete')">
+        <div class="print-settings" x-show="$store.mediaKind === 'image' && $store.state === 'preview'">
             <label for="image-dpi">Preparação automática para impressão</label>
             <select id="image-dpi" onchange="setImageDpi(this.value)">
                 <option value="300" selected>Detalhada · 300 PPI</option>
