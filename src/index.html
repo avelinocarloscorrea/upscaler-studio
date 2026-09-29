@@ -222,7 +222,7 @@
                 <span>Formato</span><strong x-text="$store.metadata?.format"></strong>
                 <span>Tamanho original</span><strong x-text="$store.metadata?.bytes"></strong>
                 <span>Dimensões originais</span><strong><span x-text="$store.metadata?.width"></span> × <span x-text="$store.metadata?.height"></span> px</strong>
-                <template x-if="$store.metadata?.duration"><span>video metadata fields</span></template>
+                <span x-show="$store.metadata?.duration">Duração</span><strong x-show="$store.metadata?.duration" x-text="$store.metadata?.duration"></strong>
             </div>
             <p class="analysis-note" x-text="$store.metadata?.cleaning"></p>
         </details>
