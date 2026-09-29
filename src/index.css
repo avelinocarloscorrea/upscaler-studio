@@ -945,5 +945,10 @@ body.acrylic .aside-title {
 }
 
 
-.complete-download-actions { padding-top: 16px; }
+
+.complete-download-actions { display: grid; gap: 10px; padding-top: 16px; }
+.complete-state-label { display: flex; align-items: center; gap: 8px; color: var(--brand); font-size: 12px; font-weight: 600; }
+a.primary.download-button { border: 1px solid var(--brand); background: var(--brand); color: #fff; }
+a.primary.download-button:hover { background: var(--brand-deep); }
 .complete-download-button { width: 100%; min-height: 42px; }
+.complete-download-actions .another-button { width: 100%; }
