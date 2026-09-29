@@ -455,3 +455,12 @@ body.dropping #stage {
     .frame-step { width: 30px; height: 30px; }
     .frame-scrubber-label { font-size: 10px; }
 }
+
+/* Keep zoomed previews pannable without scrollbars covering the image. */
+.preview-stage {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.preview-stage::-webkit-scrollbar {
+    display: none;
+}
