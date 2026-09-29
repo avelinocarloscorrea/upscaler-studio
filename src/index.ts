@@ -99,6 +99,7 @@ declare global {
         switchNetworkSize: (el: HTMLInputElement) => Promise<void>;
         switchNetworkStyle: (el: HTMLInputElement) => Promise<void>;
         switchTargetRes: (res: string) => void;
+        setImageDpi: (dpi: string) => void;
         showSaveFilePicker: (options?: any) => Promise<FileSystemFileHandle>;
         togglePause: () => void;
         togglePanel: (side: 'left' | 'right', forceHidden?: boolean) => void;
@@ -106,6 +107,7 @@ declare global {
 }
 
 let targetResolution = '2x';
+let imageDpi = 300;
 
 document.addEventListener("DOMContentLoaded", bindMediaPicker, { once: true });
 document.addEventListener("DOMContentLoaded", index);
@@ -133,6 +135,8 @@ async function index(): Promise<void> {
     Alpine.store('state', 'init');
     Alpine.store('mediaKind', 'video');
     Alpine.store('imageResized', false);
+    Alpine.store('imageDpi', imageDpi);
+    Alpine.store('printSize', '');
     Alpine.store('outWidth', 0);
     Alpine.store('outHeight', 0);
 
@@ -315,6 +319,13 @@ async function index(): Promise<void> {
         targetResolution = res;
         refreshOutputSummary();
     };
+    window.setImageDpi = (dpi: string) => {
+        const parsed = Number(dpi);
+        if (![150, 220, 300].includes(parsed)) return;
+        imageDpi = parsed;
+        Alpine.store('imageDpi', imageDpi);
+        refreshOutputSummary();
+    };
 }
 
 /**
@@ -405,13 +416,37 @@ function resetPreviewCanvas(): void {
 }
 
 function setComparePosition(position: number): void {
-    const value = Math.max(0, Math.min(100, position));
+    let value = Math.max(0, Math.min(100, position));
     const slider = document.getElementById('compare-slider') as HTMLInputElement | null;
     const after = document.getElementById('compare-after');
     const divider = document.getElementById('compare-divider');
-    if (slider && slider.value !== String(value)) slider.value = String(value);
+    if (slider) {
+        const range = getVisibleCompareRange();
+        value = Math.max(range.min, Math.min(range.max, value));
+        if (slider.value !== String(value)) slider.value = String(value);
+    }
     if (after) after.style.clipPath = `inset(0 0 0 ${value}%)`;
     if (divider) divider.style.left = `${value}%`;
+}
+
+function getVisibleCompareRange(): { min: number; max: number } {
+    const app = document.getElementById('app');
+    if (!app?.classList.contains('zoomed-preview')) return { min: 0, max: 100 };
+    const compare = document.getElementById('image-compare');
+    const leftPanel = document.getElementById('left');
+    const rightPanel = document.getElementById('right');
+    if (!compare) return { min: 0, max: 100 };
+    const rect = compare.getBoundingClientRect();
+    if (rect.width <= 0) return { min: 0, max: 100 };
+    const left = leftPanel?.getBoundingClientRect();
+    const right = rightPanel?.getBoundingClientRect();
+    const leftEdge = Math.max(rect.left, (left?.width ? left.right : rect.left) + 24);
+    const rightEdge = Math.min(rect.right, (right?.width ? right.left : rect.right) - 24);
+    const min = Math.max(0, Math.min(100, ((leftEdge - rect.left) / rect.width) * 100));
+    const max = Math.max(0, Math.min(100, ((rightEdge - rect.left) / rect.width) * 100));
+    if (min <= max) return { min, max };
+    const center = Math.max(0, Math.min(100, ((leftEdge + rightEdge) / 2 - rect.left) / rect.width * 100));
+    return { min: center, max: center };
 }
 
 function fitComparison(): void {
@@ -719,9 +754,11 @@ worker.onmessage = function (event: MessageEvent<WorkerResponseMessage>) {
         Alpine.store('state', 'complete');
         Alpine.store('download_url', event.data.data ? window.URL.createObjectURL(event.data.data) : null);
     } else if (event.data.cmd === 'image-finished') {
-        Alpine.store('target', 'blob');
-        Alpine.store('download_url', window.URL.createObjectURL(event.data.data));
-        Alpine.store('state', 'complete');
+        void setPngPrintResolution(event.data.data, imageDpi).then((printReadyPng) => {
+            Alpine.store('target', 'blob');
+            Alpine.store('download_url', window.URL.createObjectURL(printReadyPng));
+            Alpine.store('state', 'complete');
+        }).catch((error) => showError(error instanceof Error ? error.message : 'Não foi possível preparar o PNG para impressão.'));
     }
     else if (event.data.cmd === 'paused') {
         Alpine.store('state', 'paused');
@@ -800,6 +837,69 @@ async function initRecording(): Promise<void> {
 /**
  * Display error message to user
  */
+function pngCrc32(bytes: Uint8Array): number {
+    let crc = 0xffffffff;
+    for (const byte of bytes) {
+        crc ^= byte;
+        for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+    }
+    return (crc ^ 0xffffffff) >>> 0;
+}
+
+function createPngPhysChunk(dpi: number): Uint8Array {
+    const chunk = new Uint8Array(21);
+    const view = new DataView(chunk.buffer);
+    view.setUint32(0, 9);
+    chunk.set([0x70, 0x48, 0x59, 0x73], 4); // pHYs
+    const pixelsPerMeter = Math.round(dpi / 0.0254);
+    view.setUint32(8, pixelsPerMeter);
+    view.setUint32(12, pixelsPerMeter);
+    chunk[16] = 1; // unit is meter
+    view.setUint32(17, pngCrc32(chunk.subarray(4, 17)));
+    return chunk;
+}
+
+async function setPngPrintResolution(blob: Blob, dpi: number): Promise<Blob> {
+    const input = new Uint8Array(await blob.arrayBuffer());
+    const signature = [137, 80, 78, 71, 13, 10, 26, 10];
+    if (input.length < 33 || signature.some((byte, index) => input[index] !== byte)) {
+        throw new Error('O arquivo PNG gerado está inválido; tente exportar novamente.');
+    }
+
+    const chunks: Uint8Array[] = [input.subarray(0, 8)];
+    let offset = 8;
+    let totalLength = 8;
+    let foundHeader = false;
+    let foundEnd = false;
+    const physChunk = createPngPhysChunk(dpi);
+    while (offset + 12 <= input.length) {
+        const length = new DataView(input.buffer, input.byteOffset + offset, 4).getUint32(0);
+        const end = offset + 12 + length;
+        if (end > input.length) throw new Error('O PNG gerado está incompleto; tente exportar novamente.');
+        const type = String.fromCharCode(input[offset + 4], input[offset + 5], input[offset + 6], input[offset + 7]);
+        if (type !== 'pHYs') {
+            const chunk = input.subarray(offset, end);
+            chunks.push(chunk);
+            totalLength += chunk.length;
+        }
+        if (type === 'IHDR') {
+            chunks.push(physChunk);
+            totalLength += physChunk.length;
+            foundHeader = true;
+        }
+        offset = end;
+        if (type === 'IEND') { foundEnd = true; break; }
+    }
+    if (!foundHeader || !foundEnd) throw new Error('Não foi possível preparar os metadados de impressão do PNG.');
+    const output = new Uint8Array(totalLength);
+    let outputOffset = 0;
+    for (const chunk of chunks) {
+        output.set(chunk, outputOffset);
+        outputOffset += chunk.length;
+    }
+    return new Blob([output], { type: 'image/png' });
+}
+
 function showError(message: string): void {
     Alpine.store('state', 'error');
     Alpine.store('error', message);
@@ -823,6 +923,8 @@ function refreshOutputSummary(): void {
     Alpine.store('outHeight', height);
     if (mediaKind === 'image') {
         Alpine.store('size', humanFileSize(Math.max(1, width * height * 4)));
+        Alpine.store('imageDpi', imageDpi);
+        Alpine.store('printSize', `${(width / imageDpi * 2.54).toFixed(1)} × ${(height / imageDpi * 2.54).toFixed(1)} cm`);
         return;
     }
     if (!video) return;
