@@ -32,6 +32,7 @@ let mediaKind: 'video' | 'image' = 'video';
 let mediaWidth = 0;
 let mediaHeight = 0;
 let previewUrl: string | null = null;
+let previewSeekVersion = 0;
 let resolveWorkerReady!: () => void;
 let workerReady = new Promise<void>((resolve) => { resolveWorkerReady = resolve; });
 
@@ -476,8 +477,66 @@ async function setupPreview(file: File): Promise<void> {
     previewUrl = URL.createObjectURL(file);
     video.src = previewUrl;
     video.onerror = () => showError('Não foi possível decodificar este MP4 neste navegador. Verifique o codec ou tente outro arquivo.');
-    video.onloadeddata = () => { void startVideoPreview(); };
+    video.onloadeddata = () => { void startVideoPreview().catch((error) => showError(error instanceof Error ? error.message : 'Não foi possível preparar a prévia do vídeo.')); };
     video.load();
+}
+
+function formatPreviewTime(seconds: number): string {
+    const safe = Math.max(0, Number.isFinite(seconds) ? seconds : 0);
+    const minutes = Math.floor(safe / 60);
+    const remaining = safe - minutes * 60;
+    return `${String(minutes).padStart(2, '0')}:${remaining.toFixed(2).padStart(5, '0')}`;
+}
+
+function configureFrameScrubber(duration: number): void {
+    const slider = document.getElementById('preview-frame-slider') as HTMLInputElement | null;
+    const current = document.getElementById('preview-current-time');
+    const total = document.getElementById('preview-duration');
+    if (!slider || !current || !total) return;
+    slider.max = String(Math.max(duration, 0.001));
+    slider.step = String(1 / Math.max(1, Number(video?.dataset.frameRate) || 30));
+    slider.value = '0';
+    current.textContent = formatPreviewTime(0);
+    total.textContent = formatPreviewTime(duration);
+    slider.oninput = () => {
+        current.textContent = formatPreviewTime(Number(slider.value));
+        slider.setAttribute('aria-valuetext', formatPreviewTime(Number(slider.value)));
+    };
+    const seekToSlider = () => { void seekPreviewFrame(Number(slider.value)); };
+    slider.onchange = seekToSlider;
+    document.getElementById('preview-frame-prev')?.addEventListener('click', () => {
+        slider.value = String(Math.max(0, Number(slider.value) - Number(slider.step)));
+        slider.oninput?.(new Event('input'));
+        seekToSlider();
+    });
+    document.getElementById('preview-frame-next')?.addEventListener('click', () => {
+        slider.value = String(Math.min(Number(slider.max), Number(slider.value) + Number(slider.step)));
+        slider.oninput?.(new Event('input'));
+        seekToSlider();
+    });
+}
+
+async function seekPreviewFrame(time: number): Promise<void> {
+    if (!video || mediaKind !== 'video' || Alpine.store('state') !== 'preview') return;
+    const request = ++previewSeekVersion;
+    const duration = Number.isFinite(video.duration) ? video.duration : 0;
+    const target = Math.max(0, Math.min(time, duration));
+    if (Math.abs(video.currentTime - target) > 0.0005) {
+        await new Promise<void>((resolve, reject) => {
+            const timeout = window.setTimeout(() => {
+                video.removeEventListener('seeked', onSeeked);
+                reject(new Error('Não foi possível carregar esse fotograma. Tente escolher outro ponto do vídeo.'));
+            }, 5000);
+            const onSeeked = () => {
+                window.clearTimeout(timeout);
+                resolve();
+            };
+            video.addEventListener('seeked', onSeeked, { once: true });
+            video.currentTime = target;
+        });
+    }
+    if (request !== previewSeekVersion) return;
+    await updateNetwork();
 }
 
 async function startVideoPreview(): Promise<void> {
@@ -492,18 +551,7 @@ async function startVideoPreview(): Promise<void> {
     fitComparison();
 
     const duration = Number.isFinite(video.duration) ? video.duration : 0;
-    const targetTime = duration * 0.2;
-    if (targetTime > 0) {
-        await new Promise<void>((resolve) => {
-            const onSeeked = () => {
-                video.removeEventListener('seeked', onSeeked);
-                resolve();
-            };
-            video.addEventListener('seeked', onSeeked, { once: true });
-            video.currentTime = targetTime;
-            setTimeout(resolve, 500);
-        });
-    }
+    configureFrameScrubber(duration);
 
     const bitmap = await createImageBitmap(video);
     const upscaled = upscaled_canvas.transferControlToOffscreen();
@@ -798,26 +846,36 @@ function applyZoom(z: number) {
     if (stage) stage.classList.toggle('can-pan', zoom > fitZoom + 0.001);
 }
 
-function zoomIn() { applyZoom(Math.min(zoom * 1.25, 8)); }
-function zoomOut() { applyZoom(Math.max(zoom / 1.25, 0.05)); }
+function zoomBy(factor: number, clientX?: number, clientY?: number): void {
+    const stage = document.getElementById('preview-stage');
+    if (!stage) return;
+    const rect = stage.getBoundingClientRect();
+    zoomTo(clientX ?? rect.left + rect.width / 2, clientY ?? rect.top + rect.height / 2, factor);
+}
+function zoomIn() { zoomBy(1.25); }
+function zoomOut() { zoomBy(1 / 1.25); }
 function zoomFit() {
     fitZoom = computeFitZoom();
     applyZoom(fitZoom);
 }
 function zoom1x() { applyZoom(1); }
-function zoomAt(clientX: number, clientY: number, delta: number) {
+function zoomTo(clientX: number, clientY: number, factor: number): void {
     const stage = document.getElementById('preview-stage');
-    if (!stage || !mediaWidth) return;
-    const rect = stage.getBoundingClientRect();
-    const x = clientX - rect.left + stage.scrollLeft;
-    const y = clientY - rect.top + stage.scrollTop;
+    const outer = document.getElementById('image-compare-outer');
+    if (!stage || !outer || !mediaWidth) return;
+    const imageRect = outer.getBoundingClientRect();
     const oldZoom = zoom || 0.01;
-    const factor = delta > 0 ? 0.9 : 1.1;
     const newZoom = Math.max(0.05, Math.min(oldZoom * factor, 8));
+    if (newZoom === oldZoom) return;
+    const sourceX = (clientX - imageRect.left) / oldZoom;
+    const sourceY = (clientY - imageRect.top) / oldZoom;
     applyZoom(newZoom);
-    const scaleRatio = newZoom / oldZoom;
-    stage.scrollLeft = x * scaleRatio - (clientX - rect.left);
-    stage.scrollTop = y * scaleRatio - (clientY - rect.top);
+    const newRect = outer.getBoundingClientRect();
+    stage.scrollLeft += newRect.left + sourceX * newZoom - clientX;
+    stage.scrollTop += newRect.top + sourceY * newZoom - clientY;
+}
+function zoomAt(clientX: number, clientY: number, delta: number) {
+    zoomTo(clientX, clientY, delta > 0 ? 0.9 : 1.1);
 }
 
 window.addEventListener('resize', () => {
