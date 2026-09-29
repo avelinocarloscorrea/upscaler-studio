@@ -4,6 +4,7 @@ import type { WorkerRequestMessage, WorkerResponseMessage } from './types/worker
 import "./index.css";
 
 const MAX_FILE_BLOB_SIZE=1900*1024*1024; //Just under 2GB, max ArrayBufferSize
+const MAX_IMAGE_EDGE = 2048;
 const THEME_KEY = 'upscaler-studio-theme';
 const ACRYLIC_KEY = 'upscaler-studio-acrylic';
 const PANEL_LEFT_KEY = 'upscaler-studio-hide-left';
@@ -423,8 +424,8 @@ async function setupImage(file: File): Promise<void> {
         let wasResized = false;
         const originalWidth = bitmap.width;
         const originalHeight = bitmap.height;
-        if (originalWidth > 4096 || originalHeight > 4096) {
-            const scale = 4096 / Math.max(originalWidth, originalHeight);
+        if (originalWidth > MAX_IMAGE_EDGE || originalHeight > MAX_IMAGE_EDGE) {
+            const scale = MAX_IMAGE_EDGE / Math.max(originalWidth, originalHeight);
             const resizedWidth = Math.max(1, Math.round(originalWidth * scale));
             const resizedHeight = Math.max(1, Math.round(originalHeight * scale));
             const resizedBitmap = await createImageBitmap(bitmap, {
