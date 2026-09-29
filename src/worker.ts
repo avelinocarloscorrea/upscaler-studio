@@ -264,6 +264,7 @@ self.onmessage = async function (event: MessageEvent<WorkerRequestMessage>) {
           event.data.data.weights,
           event.data.data.bitmap
         );
+        postMessage({ cmd: 'network-ready', data: event.data.data.requestId } satisfies WorkerResponseMessage);
         break;
     }
   } catch (error) {
