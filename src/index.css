@@ -594,3 +594,30 @@ body.dropping #stage {
     font-size: 10.5px;
     line-height: 1.5;
 }
+
+/* Inspector file details */
+.file-summary-name strong { max-width: 62%; overflow-wrap: anywhere; }
+.summary-note { margin: 9px 0 0; color: var(--muted); font-size: 10.5px; line-height: 1.5; }
+.preview-caption { display: none !important; }
+
+/* Keep zoom controls anchored to the viewport while the workbench scrolls. */
+@media (min-width: 821px) {
+    #app.zoomed-preview .canvasbar {
+        position: fixed;
+        z-index: 30;
+        left: calc((100vw + var(--gut-l) - var(--gut-r)) / 2);
+        bottom: max(14px, env(safe-area-inset-bottom));
+        transform: translateX(-50%);
+        margin: 0;
+        max-width: calc(100vw - var(--gut-l) - var(--gut-r) - 24px);
+    }
+    #app.zoomed-preview .frame-scrubber {
+        position: fixed;
+        z-index: 29;
+        left: calc((100vw + var(--gut-l) - var(--gut-r)) / 2);
+        bottom: calc(max(14px, env(safe-area-inset-bottom)) + 58px);
+        transform: translateX(-50%);
+        width: min(720px, calc(100vw - var(--gut-l) - var(--gut-r) - 24px));
+        margin: 0;
+    }
+}
