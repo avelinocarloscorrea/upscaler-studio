@@ -148,6 +148,9 @@ async function index(): Promise<void> {
     Alpine.store('outWidth', 0);
     Alpine.store('outHeight', 0);
     Alpine.store('networkStatus', 'Prévia pronta');
+    Alpine.store('previewModel', networks[size].name);
+    Alpine.store('previewStyle', 'Fotografia');
+    Alpine.store('previewOutput', '');
     Alpine.store('assessment', null);
     Alpine.store('metadata', null);
 
@@ -318,12 +321,14 @@ async function index(): Promise<void> {
     window.switchNetworkSize = async (input: HTMLInputElement) => {
         if (input.value !== size) {
             size = input.value as NetworkSize;
+            Alpine.store('previewModel', networks[size].name);
             await updateNetwork();
         }
     };
     window.switchNetworkStyle = async (input: HTMLInputElement) => {
         if (input.value !== content) {
             content = input.value as ContentType;
+            Alpine.store('previewStyle', content === 'rl' ? 'Fotografia' : content === 'an' ? 'Ilustração' : 'Render 3D');
             await updateNetwork();
         }
     };
@@ -331,6 +336,7 @@ async function index(): Promise<void> {
         targetResolution = res;
         refreshOutputSummary();
         const output = getOutputSize();
+        Alpine.store('previewOutput', `${output.width} × ${output.height} px`);
         const metadata = Alpine.store('metadata');
         if (metadata) { metadata.outputWidth = output.width; metadata.outputHeight = output.height; }
         if (Alpine.store('state') === 'preview') requestOutputResolutionPreview();
@@ -854,7 +860,11 @@ worker.onmessage = function (event: MessageEvent<WorkerResponseMessage>) {
             previewResolutionUrl = URL.createObjectURL(event.data.data.blob);
             const previewImage = document.getElementById('upscaled-resolution-preview') as HTMLImageElement | null;
             if (previewImage) previewImage.src = previewResolutionUrl;
-            Alpine.store('networkStatus', 'Prévia no tamanho final');
+            const output = getOutputSize();
+            const profile = size === 'small' ? 'Leve' : size === 'medium' ? 'Equilibrado' : 'Detalhado';
+            const style = content === 'rl' ? 'Fotografia' : content === 'an' ? 'Ilustração' : 'Render 3D';
+            Alpine.store('previewOutput', `${output.width} × ${output.height} px`);
+            Alpine.store('networkStatus', `Prévia atualizada · ${profile} · ${style} · ${output.width} × ${output.height} px`);
         }
     } else if (event.data.cmd === 'image-finished') {
         const preparedPng = cleanOutputMetadata ? Promise.resolve(event.data.data) : setPngPrintResolution(event.data.data, imageDpi);
@@ -886,7 +896,9 @@ function selectWorkbenchPane(name: string): void {
 
 function requestOutputResolutionPreview(): void {
     const requestId = ++previewResolutionSequence;
-    Alpine.store('networkStatus', 'Renderizando prévia final…');
+    const output = getOutputSize();
+    Alpine.store('previewOutput', `${output.width} × ${output.height} px`);
+    Alpine.store('networkStatus', `Aplicando prévia ${networks[size].name} · ${output.width} × ${output.height}…`);
     worker.postMessage({ cmd: 'preview-image', targetResolution, requestId } satisfies WorkerRequestMessage);
 }
 
@@ -900,7 +912,9 @@ async function updateNetwork(): Promise<void> {
     const selectedContent = content;
     const contentLabel = selectedContent === 'rl' ? 'Fotografia' : selectedContent === 'an' ? 'Ilustração' : 'Render 3D';
     const sizeLabel = selectedSize === 'small' ? 'Leve' : selectedSize === 'medium' ? 'Equilibrado' : 'Detalhado';
-    Alpine.store('networkStatus', `Aplicando ${contentLabel} · ${sizeLabel}…`);
+    Alpine.store('previewModel', networks[selectedSize].name);
+    Alpine.store('previewStyle', contentLabel);
+    Alpine.store('networkStatus', `Aplicando ${sizeLabel} · ${contentLabel}…`);
     try {
         const bitmap = mediaKind === 'image'
             ? await createImageBitmap(preparedImageBitmap ?? currentMediaFile)
