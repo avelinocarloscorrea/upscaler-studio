@@ -943,3 +943,14 @@ body.acrylic .aside-title {
         max-width: calc(100vw - 80px);
     }
 }
+
+
+/* Keep the zoom controls clear of the completion/download panel. */
+#app:has(#download-link:not([style*="display: none"])) .canvasbar {
+    bottom: calc(max(14px, env(safe-area-inset-bottom)) + 132px);
+}
+@media (max-width: 820px) {
+    #app:has(#download-link:not([style*="display: none"])) .canvasbar {
+        bottom: calc(max(12px, env(safe-area-inset-bottom)) + 176px);
+    }
+}
